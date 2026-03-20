@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { Menu, LogOut } from 'lucide-react'
+import { Menu, LogOut, User as UserIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { useState, useEffect } from 'react'
 import { logoutAction } from '@/app/actions/auth'
 import { useRouter } from 'next/navigation'
@@ -64,10 +65,18 @@ export default function Header() {
           <div className="hidden md:flex items-center gap-4">
             {session ? (
               <>
-                <div className="text-sm">
-                  <p className="font-semibold text-foreground">{session.name}</p>
-                  <p className="text-xs text-muted-foreground">{session.email}</p>
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-foreground leading-none">{session.name}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{session.email}</p>
                 </div>
+                <Link href="/profile">
+                  <Avatar className="h-9 w-9 border border-border hover:opacity-80 transition-opacity">
+                    <AvatarImage src={session.image || undefined} />
+                    <AvatarFallback>
+                      {session.name?.charAt(0) || session.email?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="p-2 hover:bg-secondary rounded-lg transition-colors text-muted-foreground hover:text-foreground"
@@ -77,11 +86,19 @@ export default function Header() {
                 </button>
               </>
             ) : (
+              <> 
+              <Link href="/auth/register">
+                <Button variant="outline" size="sm">
+                  Sign up
+                </Button>
+              </Link>
               <Link href="/auth/login">
                 <Button variant="outline" size="sm">
                   Sign in
                 </Button>
               </Link>
+              </>
+             
             )}
           </div>
 
@@ -119,9 +136,14 @@ export default function Header() {
               </button>
             )}
             {!session && (
+              <>
+              <Link href="/auth/register" className="text-foreground hover:text-primary transition-colors font-medium pt-2 border-t border-border">
+                Sign Up
+              </Link>
               <Link href="/auth/login" className="text-foreground hover:text-primary transition-colors font-medium pt-2 border-t border-border">
                 Sign in
               </Link>
+              </>
             )}
           </nav>
         )}

@@ -1,7 +1,7 @@
 'use server'
 
 import { signIn, signOut } from '@/auth'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
 import bcryptjs from 'bcryptjs'
 
 export async function registerAction(

@@ -10,6 +10,7 @@ export interface Session {
   userId: string
   email: string
   name: string
+  image?: string | null
 }
 
 export interface AuthResponse {

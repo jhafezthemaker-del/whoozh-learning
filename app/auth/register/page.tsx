@@ -16,7 +16,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-
+  const [success, setSuccess] = useState('')
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -36,7 +36,8 @@ export default function RegisterPage() {
     try {
       const result = await registerAction(email, password, name)
       if (result.success) {
-        router.push('/')
+        setSuccess(result.message)
+        //router.push('/auth/register')
       } else {
         setError(result.message)
       }
@@ -113,6 +114,11 @@ export default function RegisterPage() {
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
               <p className="text-destructive text-sm">{error}</p>
+            </div>
+          )}
+          {success && (
+            <div className="bg-success/10 border border-success/20 rounded-lg p-4">
+              <p className="text-success text-sm">{success}</p>
             </div>
           )}
 

@@ -2,12 +2,17 @@
 
 import { useState } from 'react'
 import { Resource } from '@/lib/learning-materials'
-import { FileText, Play, X, ArrowLeft } from 'lucide-react'
+import { FileText, Play, X, ArrowLeft, Clock, ChevronDown } from 'lucide-react'
 import { Button } from './ui/button'
 
 interface LessonResourcesProps {
   resources: Resource[]
   topicTitle: string
+}
+
+const getFormattedTime = () => {
+  const now = new Date()
+  return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
 }
 
 export default function LessonResources({ resources, topicTitle }: LessonResourcesProps) {
@@ -70,6 +75,28 @@ export default function LessonResources({ resources, topicTitle }: LessonResourc
 
   return (
     <div className="w-full h-full flex flex-col bg-background">
+      {/* Top Navigation Header */}
+      <div className="border-b border-border px-6 py-4 space-y-4">
+        {/* Dropdown and Time Row */}
+        <div className="flex items-center justify-between">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary border border-border hover:bg-muted transition-colors text-foreground font-medium text-sm group">
+            View All Topic
+            <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+          </button>
+          <div className="flex items-center gap-2 text-foreground">
+            <Clock className="w-4 h-4 text-muted-foreground" />
+            <span className="font-medium">Time {getFormattedTime()}</span>
+          </div>
+        </div>
+
+        {/* Topic Navigation */}
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>Prev:Topic 1</span>
+          <span className="font-medium text-foreground">Current:Topic 1</span>
+          <span>Next:Topic 1</span>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="border-b border-border p-6">
         <h2 className="text-2xl font-bold text-foreground">Learning Resources</h2>

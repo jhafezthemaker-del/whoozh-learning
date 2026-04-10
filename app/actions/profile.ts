@@ -34,7 +34,7 @@ export async function updateProfileAction(formData: FormData) {
     }
 
     await prisma.user.update({
-      where: { id: session.user.id },
+      where: { user_id: session.user.id },
       data: {
         name,
         image: imageUrl,
@@ -48,5 +48,62 @@ export async function updateProfileAction(formData: FormData) {
   } catch (error) {
     console.error('Error updating profile:', error)
     return { success: false, message: 'Failed to update profile' }
+  }
+}
+import bcryptjs from 'bcryptjs'
+
+export async function changePasswordAction(formData: FormData) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false, message: 'Not authenticated' }
+  }
+
+  const currentPassword = formData.get('currentPassword')
+  const newPassword = formData.get('newPassword')
+  const confirmPassword = formData.get('confirmPassword')
+
+  if (
+    typeof currentPassword !== 'string' ||
+    typeof newPassword !== 'string' ||
+    typeof confirmPassword !== 'string'
+  ) {
+    return { success: false, message: 'Missing required fields' }
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { success: false, message: 'New passwords do not match' }
+  }
+
+  if (newPassword.length < 6) {
+    return { success: false, message: 'Password must be at least 6 characters' }
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { user_id: session.user.id },
+    })
+
+    if (!user || !user.password) {
+      return { success: false, message: 'User not found or password not set' }
+    }
+
+    const passwordsMatch = await bcryptjs.compare(currentPassword, user.password)
+    if (!passwordsMatch) {
+      return { success: false, message: 'Incorrect current password' }
+    }
+
+    const hashedNewPassword = await bcryptjs.hash(newPassword, 10)
+
+    await prisma.user.update({
+      where: { user_id: session.user.id },
+      data: {
+        password: hashedNewPassword,
+      },
+    })
+
+    return { success: true, message: 'Password changed successfully' }
+  } catch (error) {
+    console.error('Error changing password:', error)
+    return { success: false, message: 'Failed to change password' }
   }
 }

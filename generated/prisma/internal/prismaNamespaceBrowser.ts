@@ -57,7 +57,10 @@ export const ModelName = {
   Source: 'Source',
   Conversation: 'Conversation',
   Message: 'Message',
-  Embedding: 'Embedding'
+  Embedding: 'Embedding',
+  Learning: 'Learning',
+  Note: 'Note',
+  Block: 'Block'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -77,7 +80,7 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 
 
 export const UserScalarFieldEnum = {
-  id: 'id',
+  user_id: 'user_id',
   name: 'name',
   email: 'email',
   password: 'password',
@@ -147,7 +150,8 @@ export const MessageScalarFieldEnum = {
   role: 'role',
   content: 'content',
   token_count: 'token_count',
-  metadata: 'metadata'
+  metadata: 'metadata',
+  date_created: 'date_created'
 } as const
 
 export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
@@ -158,10 +162,43 @@ export const EmbeddingScalarFieldEnum = {
   content: 'content',
   embedding: 'embedding',
   source: 'source',
-  metadata: 'metadata'
+  metadata: 'metadata',
+  date_created: 'date_created'
 } as const
 
 export type EmbeddingScalarFieldEnum = (typeof EmbeddingScalarFieldEnum)[keyof typeof EmbeddingScalarFieldEnum]
+
+
+export const LearningScalarFieldEnum = {
+  learning_id: 'learning_id',
+  user_id: 'user_id',
+  date_created: 'date_created',
+  status: 'status'
+} as const
+
+export type LearningScalarFieldEnum = (typeof LearningScalarFieldEnum)[keyof typeof LearningScalarFieldEnum]
+
+
+export const NoteScalarFieldEnum = {
+  note_id: 'note_id',
+  learning_id: 'learning_id',
+  status: 'status',
+  date_created: 'date_created'
+} as const
+
+export type NoteScalarFieldEnum = (typeof NoteScalarFieldEnum)[keyof typeof NoteScalarFieldEnum]
+
+
+export const BlockScalarFieldEnum = {
+  block_Id: 'block_Id',
+  content: 'content',
+  content_type: 'content_type',
+  note_id: 'note_id',
+  status: 'status',
+  subject: 'subject'
+} as const
+
+export type BlockScalarFieldEnum = (typeof BlockScalarFieldEnum)[keyof typeof BlockScalarFieldEnum]
 
 
 export const SortOrder = {

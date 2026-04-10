@@ -8,8 +8,8 @@ export interface Block {
   url?: string
 }
 
-export const createBlock = (type: BlockType = 'text', content: string = ''): Block => ({
-  id: Math.random().toString(36).substr(2, 9),
+export const createBlock = (type: BlockType = 'text', content: string = '', id?: string): Block => ({
+  id: id || Math.random().toString(36).substr(2, 9),
   type,
   content,
   checked: false,

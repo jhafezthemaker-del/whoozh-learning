@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(uuid())
+  user_id       String         @id @default(uuid())
   name          String?
   email         String?        @unique
   password      String?
@@ -18,25 +18,26 @@ model User {
   conversations Conversation[]
   accounts      Account[]
   sessions      Session[]
+  learning      Learning[]
 
   @@map("users")
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String  @map("user_id")
-  type               String
-  provider           String
-  providerAccountId  String  @map("provider_account_id")
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String? @db.Text
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [user_id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -47,7 +48,7 @@ model Session {
   sessionToken String   @unique @map("session_token")
   userId       String   @map("user_id")
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [user_id], onDelete: Cascade)
 
   @@map("sessions")
 }
@@ -71,7 +72,7 @@ model Conversation {
   system_prompt   String?
   model_slug      String?
   created_at      DateTime   @default(now())
-  user            User       @relation(fields: [user_id], references: [id])
+  user            User       @relation(fields: [user_id], references: [user_id])
   sources         Source[]
   messages        Message[]
 
@@ -85,17 +86,53 @@ model Message {
   content         String
   token_count     Int?
   metadata        Json?
+  date_created    DateTime     @default(now())
   conversation    Conversation @relation(fields: [conversation_id], references: [conversation_id])
 
   @@map("messages")
 }
 
 model Embedding {
-  embeddings_id String  @id @default(uuid())
+  embeddings_id String   @id @default(uuid())
   content       String
-  embedding     Json    // Adjust type if using pgvector (e.g., Unsupported("vector"))
+  embedding     Json // Adjust type if using pgvector (e.g., Unsupported("vector"))
   source        String?
   metadata      Json?
+  date_created  DateTime @default(now())
 
   @@map("embeddings")
+}
+
+model Learning {
+  learning_id  String   @id @default(uuid())
+  user_id      String
+  date_created DateTime @default(now())
+  status       String
+  user         User     @relation(fields: [user_id], references: [user_id])
+  notes        Note[]
+
+  @@map("learning")
+}
+
+model Note {
+  note_id      String   @id @default(uuid())
+  learning_id  String
+  status       String
+  date_created DateTime @default(now())
+  learning     Learning @relation(fields: [learning_id], references: [learning_id])
+  blocks       Block[]
+
+  @@map("notes")
+}
+
+model Block {
+  block_Id     String   @id @default(uuid())
+  content      String
+  content_type String
+  note_id      String
+  status       String
+  subject      String?
+  note         Note     @relation(fields: [note_id], references: [note_id])
+
+  @@map("blocks")
 }

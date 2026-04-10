@@ -52,3 +52,18 @@ export type Message = Prisma.MessageModel
  * 
  */
 export type Embedding = Prisma.EmbeddingModel
+/**
+ * Model Learning
+ * 
+ */
+export type Learning = Prisma.LearningModel
+/**
+ * Model Note
+ * 
+ */
+export type Note = Prisma.NoteModel
+/**
+ * Model Block
+ * 
+ */
+export type Block = Prisma.BlockModel

@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { ProfileForm } from "@/components/profile-form"
+import { PasswordForm } from "@/components/password-form"
 import { redirect } from "next/navigation"
 import Header from "@/components/header"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -14,7 +15,11 @@ export default async function ProfilePage() {
   }
 
   const user = session.user
-  const memberSince = new Date().toLocaleDateString('en-US', { 
+  
+  // Use a deterministic date for memberSince to avoid hydration mismatches
+  // Ideally this should come from user.createdAt in the database
+  const memberSinceDate = new Date("2024-03-01") 
+  const memberSince = memberSinceDate.toLocaleDateString('en-US', { 
     month: 'long', 
     year: 'numeric' 
   })
@@ -94,13 +99,23 @@ export default async function ProfilePage() {
           </div>
         </div>
 
-        {/* Profile Form Section */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="h-1 w-1 rounded-full bg-primary" />
-            <h2 className="text-xl font-semibold text-foreground">Account Settings</h2>
+        {/* Profile sections */}
+        <div className="space-y-12 mt-8">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="h-1 w-1 rounded-full bg-primary" />
+              <h2 className="text-xl font-semibold text-foreground">Account Settings</h2>
+            </div>
+            <ProfileForm user={user} />
           </div>
-          <ProfileForm user={user} />
+
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="h-1 w-1 rounded-full bg-primary" />
+              <h2 className="text-xl font-semibold text-foreground">Security</h2>
+            </div>
+            <PasswordForm />
+          </div>
         </div>
       </main>
     </div>

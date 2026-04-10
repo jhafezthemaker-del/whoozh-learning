@@ -11,7 +11,7 @@ import { ArrowRight, Plus } from 'lucide-react'
 export default function LearningAreaPage() {
   const [selectedSourceId, setSelectedSourceId] = useState(sources[0].id)
   const [blocks, setBlocks] = useState<Block[]>([
-    createBlock('text', 'Click here to start taking notes...'),
+    createBlock('text', 'Click here to start taking notes...', 'initial-block'),
   ])
   const [summaryWidth, setSummaryWidth] = useState(50)
   const [notesWidth, setNotesWidth] = useState(50)

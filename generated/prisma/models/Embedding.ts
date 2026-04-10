@@ -28,12 +28,14 @@ export type EmbeddingMinAggregateOutputType = {
   embeddings_id: string | null
   content: string | null
   source: string | null
+  date_created: Date | null
 }
 
 export type EmbeddingMaxAggregateOutputType = {
   embeddings_id: string | null
   content: string | null
   source: string | null
+  date_created: Date | null
 }
 
 export type EmbeddingCountAggregateOutputType = {
@@ -42,6 +44,7 @@ export type EmbeddingCountAggregateOutputType = {
   embedding: number
   source: number
   metadata: number
+  date_created: number
   _all: number
 }
 
@@ -50,12 +53,14 @@ export type EmbeddingMinAggregateInputType = {
   embeddings_id?: true
   content?: true
   source?: true
+  date_created?: true
 }
 
 export type EmbeddingMaxAggregateInputType = {
   embeddings_id?: true
   content?: true
   source?: true
+  date_created?: true
 }
 
 export type EmbeddingCountAggregateInputType = {
@@ -64,6 +69,7 @@ export type EmbeddingCountAggregateInputType = {
   embedding?: true
   source?: true
   metadata?: true
+  date_created?: true
   _all?: true
 }
 
@@ -145,6 +151,7 @@ export type EmbeddingGroupByOutputType = {
   embedding: runtime.JsonValue
   source: string | null
   metadata: runtime.JsonValue | null
+  date_created: Date
   _count: EmbeddingCountAggregateOutputType | null
   _min: EmbeddingMinAggregateOutputType | null
   _max: EmbeddingMaxAggregateOutputType | null
@@ -174,6 +181,7 @@ export type EmbeddingWhereInput = {
   embedding?: Prisma.JsonFilter<"Embedding">
   source?: Prisma.StringNullableFilter<"Embedding"> | string | null
   metadata?: Prisma.JsonNullableFilter<"Embedding">
+  date_created?: Prisma.DateTimeFilter<"Embedding"> | Date | string
 }
 
 export type EmbeddingOrderByWithRelationInput = {
@@ -182,6 +190,7 @@ export type EmbeddingOrderByWithRelationInput = {
   embedding?: Prisma.SortOrder
   source?: Prisma.SortOrderInput | Prisma.SortOrder
   metadata?: Prisma.SortOrderInput | Prisma.SortOrder
+  date_created?: Prisma.SortOrder
 }
 
 export type EmbeddingWhereUniqueInput = Prisma.AtLeast<{
@@ -193,6 +202,7 @@ export type EmbeddingWhereUniqueInput = Prisma.AtLeast<{
   embedding?: Prisma.JsonFilter<"Embedding">
   source?: Prisma.StringNullableFilter<"Embedding"> | string | null
   metadata?: Prisma.JsonNullableFilter<"Embedding">
+  date_created?: Prisma.DateTimeFilter<"Embedding"> | Date | string
 }, "embeddings_id">
 
 export type EmbeddingOrderByWithAggregationInput = {
@@ -201,6 +211,7 @@ export type EmbeddingOrderByWithAggregationInput = {
   embedding?: Prisma.SortOrder
   source?: Prisma.SortOrderInput | Prisma.SortOrder
   metadata?: Prisma.SortOrderInput | Prisma.SortOrder
+  date_created?: Prisma.SortOrder
   _count?: Prisma.EmbeddingCountOrderByAggregateInput
   _max?: Prisma.EmbeddingMaxOrderByAggregateInput
   _min?: Prisma.EmbeddingMinOrderByAggregateInput
@@ -215,6 +226,7 @@ export type EmbeddingScalarWhereWithAggregatesInput = {
   embedding?: Prisma.JsonWithAggregatesFilter<"Embedding">
   source?: Prisma.StringNullableWithAggregatesFilter<"Embedding"> | string | null
   metadata?: Prisma.JsonNullableWithAggregatesFilter<"Embedding">
+  date_created?: Prisma.DateTimeWithAggregatesFilter<"Embedding"> | Date | string
 }
 
 export type EmbeddingCreateInput = {
@@ -223,6 +235,7 @@ export type EmbeddingCreateInput = {
   embedding: Prisma.JsonNullValueInput | runtime.InputJsonValue
   source?: string | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  date_created?: Date | string
 }
 
 export type EmbeddingUncheckedCreateInput = {
@@ -231,6 +244,7 @@ export type EmbeddingUncheckedCreateInput = {
   embedding: Prisma.JsonNullValueInput | runtime.InputJsonValue
   source?: string | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  date_created?: Date | string
 }
 
 export type EmbeddingUpdateInput = {
@@ -239,6 +253,7 @@ export type EmbeddingUpdateInput = {
   embedding?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  date_created?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EmbeddingUncheckedUpdateInput = {
@@ -247,6 +262,7 @@ export type EmbeddingUncheckedUpdateInput = {
   embedding?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  date_created?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EmbeddingCreateManyInput = {
@@ -255,6 +271,7 @@ export type EmbeddingCreateManyInput = {
   embedding: Prisma.JsonNullValueInput | runtime.InputJsonValue
   source?: string | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  date_created?: Date | string
 }
 
 export type EmbeddingUpdateManyMutationInput = {
@@ -263,6 +280,7 @@ export type EmbeddingUpdateManyMutationInput = {
   embedding?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  date_created?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EmbeddingUncheckedUpdateManyInput = {
@@ -271,6 +289,7 @@ export type EmbeddingUncheckedUpdateManyInput = {
   embedding?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  date_created?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EmbeddingCountOrderByAggregateInput = {
@@ -279,18 +298,21 @@ export type EmbeddingCountOrderByAggregateInput = {
   embedding?: Prisma.SortOrder
   source?: Prisma.SortOrder
   metadata?: Prisma.SortOrder
+  date_created?: Prisma.SortOrder
 }
 
 export type EmbeddingMaxOrderByAggregateInput = {
   embeddings_id?: Prisma.SortOrder
   content?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  date_created?: Prisma.SortOrder
 }
 
 export type EmbeddingMinOrderByAggregateInput = {
   embeddings_id?: Prisma.SortOrder
   content?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  date_created?: Prisma.SortOrder
 }
 
 
@@ -301,6 +323,7 @@ export type EmbeddingSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   embedding?: boolean
   source?: boolean
   metadata?: boolean
+  date_created?: boolean
 }, ExtArgs["result"]["embedding"]>
 
 export type EmbeddingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -309,6 +332,7 @@ export type EmbeddingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   embedding?: boolean
   source?: boolean
   metadata?: boolean
+  date_created?: boolean
 }, ExtArgs["result"]["embedding"]>
 
 export type EmbeddingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -317,6 +341,7 @@ export type EmbeddingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   embedding?: boolean
   source?: boolean
   metadata?: boolean
+  date_created?: boolean
 }, ExtArgs["result"]["embedding"]>
 
 export type EmbeddingSelectScalar = {
@@ -325,9 +350,10 @@ export type EmbeddingSelectScalar = {
   embedding?: boolean
   source?: boolean
   metadata?: boolean
+  date_created?: boolean
 }
 
-export type EmbeddingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"embeddings_id" | "content" | "embedding" | "source" | "metadata", ExtArgs["result"]["embedding"]>
+export type EmbeddingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"embeddings_id" | "content" | "embedding" | "source" | "metadata" | "date_created", ExtArgs["result"]["embedding"]>
 
 export type $EmbeddingPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Embedding"
@@ -338,6 +364,7 @@ export type $EmbeddingPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     embedding: runtime.JsonValue
     source: string | null
     metadata: runtime.JsonValue | null
+    date_created: Date
   }, ExtArgs["result"]["embedding"]>
   composites: {}
 }
@@ -766,6 +793,7 @@ export interface EmbeddingFieldRefs {
   readonly embedding: Prisma.FieldRef<"Embedding", 'Json'>
   readonly source: Prisma.FieldRef<"Embedding", 'String'>
   readonly metadata: Prisma.FieldRef<"Embedding", 'Json'>
+  readonly date_created: Prisma.FieldRef<"Embedding", 'DateTime'>
 }
     
 

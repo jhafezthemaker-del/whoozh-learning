@@ -11,7 +11,7 @@ export const authConfig = {
   callbacks: {
     jwt({ token, user, trigger, session }: any) {
       if (user) {
-        token.id = user.id
+        token.id = user.id || (user as any).user_id
         token.image = user.image
       }
       if (trigger === "update" && session) {

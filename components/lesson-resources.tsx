@@ -4,11 +4,25 @@ import { useState } from 'react'
 import { Resource } from '@/lib/learning-materials'
 import { FileText, Play, X, ArrowLeft, Clock, ChevronDown } from 'lucide-react'
 import { Button } from './ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu'
 
 interface LessonResourcesProps {
   resources: Resource[]
   topicTitle: string
 }
+
+const TOPICS = [
+  { id: 1, name: 'Topic 1' },
+  { id: 2, name: 'Topic 2' },
+  { id: 3, name: 'Topic 3' },
+  { id: 4, name: 'Topic 4' },
+  { id: 5, name: 'Topic 5' },
+]
 
 const getFormattedTime = () => {
   const now = new Date()
@@ -17,6 +31,7 @@ const getFormattedTime = () => {
 
 export default function LessonResources({ resources, topicTitle }: LessonResourcesProps) {
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null)
+  const [selectedTopicId, setSelectedTopicId] = useState(1)
 
   if (selectedResource) {
     return (
@@ -79,10 +94,25 @@ export default function LessonResources({ resources, topicTitle }: LessonResourc
       <div className="border-b border-border px-6 py-4 space-y-4">
         {/* Dropdown and Time Row */}
         <div className="flex items-center justify-between">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary border border-border hover:bg-muted transition-colors text-foreground font-medium text-sm group">
-            View All Topic
-            <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary border border-border hover:bg-muted transition-colors text-foreground font-medium text-sm group">
+                View All Topic
+                <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              {TOPICS.map((topic) => (
+                <DropdownMenuItem
+                  key={topic.id}
+                  onClick={() => setSelectedTopicId(topic.id)}
+                  className={selectedTopicId === topic.id ? 'bg-primary/10' : ''}
+                >
+                  {topic.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <div className="flex items-center gap-2 text-foreground">
             <Clock className="w-4 h-4 text-muted-foreground" />
             <span className="font-medium">Time {getFormattedTime()}</span>
@@ -91,9 +121,15 @@ export default function LessonResources({ resources, topicTitle }: LessonResourc
 
         {/* Topic Navigation */}
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>Prev:Topic 1</span>
-          <span className="font-medium text-foreground">Current:Topic 1</span>
-          <span>Next:Topic 1</span>
+          <span>
+            Prev:{TOPICS[Math.max(0, selectedTopicId - 2)]?.name || 'Topic 1'}
+          </span>
+          <span className="font-medium text-foreground">
+            Current:{TOPICS.find(t => t.id === selectedTopicId)?.name || 'Topic 1'}
+          </span>
+          <span>
+            Next:{TOPICS[Math.min(TOPICS.length - 1, selectedTopicId)]?.name || 'Topic 1'}
+          </span>
         </div>
       </div>
 

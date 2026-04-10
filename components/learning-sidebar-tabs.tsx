@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Source } from '@/lib/learning-materials'
 import { Plus, FileText, MessageSquare } from 'lucide-react'
@@ -48,7 +48,7 @@ export default function LearningSidebarTabs({
     }
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isResizing) {
       window.addEventListener('mousemove', handleMouseMove)
       window.addEventListener('mouseup', handleMouseUp)

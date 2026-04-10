@@ -2,22 +2,22 @@
 
 import { useState, useEffect } from 'react'
 import Header from '@/components/header'
-import LearningSidebar from '@/components/learning-sidebar'
+import LearningSidebarTabs from '@/components/learning-sidebar-tabs'
+import LessonResources from '@/components/lesson-resources'
 import NoteBlock from '@/components/note-block'
 import { sources, lessonMaterials, getSourceById } from '@/lib/learning-materials'
 import { createBlock, Block } from '@/lib/blocks'
-import { ArrowRight, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 
 export default function LearningAreaPage() {
   const [selectedSourceId, setSelectedSourceId] = useState(sources[0].id)
   const [blocks, setBlocks] = useState<Block[]>([
     createBlock('text', 'Click here to start taking notes...', 'initial-block'),
   ])
-  const [summaryWidth, setSummaryWidth] = useState(50)
-  const [notesWidth, setNotesWidth] = useState(50)
+  const [lessonsWidth, setLessonsWidth] = useState(60)
+  const [notesWidth, setNotesWidth] = useState(40)
   const [isResizing, setIsResizing] = useState(false)
   
-  const selectedSource = getSourceById(selectedSourceId)
   const lesson = lessonMaterials[0]
 
   const addBlock = () => {
@@ -47,11 +47,11 @@ export default function LearningAreaPage() {
     if (!mainContent) return
 
     const mainRect = mainContent.getBoundingClientRect()
-    const newSummaryWidth = ((e.clientX - mainRect.left) / mainRect.width) * 100
+    const newLessonsWidth = ((e.clientX - mainRect.left) / mainRect.width) * 100
 
-    if (newSummaryWidth > 20 && newSummaryWidth < 80) {
-      setSummaryWidth(newSummaryWidth)
-      setNotesWidth(100 - newSummaryWidth)
+    if (newLessonsWidth > 20 && newLessonsWidth < 80) {
+      setLessonsWidth(newLessonsWidth)
+      setNotesWidth(100 - newLessonsWidth)
     }
   }
 
@@ -71,8 +71,8 @@ export default function LearningAreaPage() {
       <Header />
       
       <div className="flex h-[calc(100vh-64px)]">
-        {/* Sidebar */}
-        <LearningSidebar
+        {/* Sidebar with Tabs */}
+        <LearningSidebarTabs
           sources={sources}
           selectedSourceId={selectedSourceId}
           onSourceSelect={setSelectedSourceId}
@@ -81,30 +81,15 @@ export default function LearningAreaPage() {
         {/* Main Content */}
         <main className="flex-1 overflow-hidden">
           <div className="flex h-full">
-            {/* Summary Section */}
+            {/* Lesson Resources Section */}
             <div 
-              style={{ width: `${summaryWidth}%` }}
-              className="border-r border-border p-8 overflow-y-auto transition-all"
+              style={{ width: `${lessonsWidth}%` }}
+              className="border-r border-border overflow-hidden transition-all"
             >
-              <h2 className="text-2xl font-bold text-foreground mb-6">Summary</h2>
-              
-              <div className="space-y-4 mb-8">
-                <p className="text-foreground leading-relaxed text-base">
-                  {lesson.summary}
-                </p>
-              </div>
-
-              {/* Interactive Input */}
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  placeholder="Start Typing..."
-                  className="flex-1 bg-secondary border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <button className="bg-secondary border border-border hover:bg-muted transition-colors rounded-lg px-4 py-3 text-foreground">
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              </div>
+              <LessonResources
+                resources={lesson.resources}
+                topicTitle={lesson.title}
+              />
             </div>
 
             {/* Resize Handle */}

@@ -1,9 +1,9 @@
 'use client'
 
+import React, { useState, useEffect } from 'react'
 import { Source } from '@/lib/learning-materials'
 import { Plus, FileText } from 'lucide-react'
 import { Button } from './ui/button'
-import { useState, useEffect } from 'react'
 
 interface LearningSidebarProps {
   sources: Source[]

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateProfileAction } from '@/app/actions/profile'
 import { Button } from '@/components/ui/button'

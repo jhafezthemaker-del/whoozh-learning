@@ -393,7 +393,8 @@ export const ModelName = {
   Embedding: 'Embedding',
   Learning: 'Learning',
   Note: 'Note',
-  Block: 'Block'
+  Block: 'Block',
+  Roadmap: 'Roadmap'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -409,7 +410,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "account" | "session" | "source" | "conversation" | "message" | "embedding" | "learning" | "note" | "block"
+    modelProps: "user" | "account" | "session" | "source" | "conversation" | "message" | "embedding" | "learning" | "note" | "block" | "roadmap"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1153,6 +1154,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Roadmap: {
+      payload: Prisma.$RoadmapPayload<ExtArgs>
+      fields: Prisma.RoadmapFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RoadmapFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RoadmapPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RoadmapFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RoadmapPayload>
+        }
+        findFirst: {
+          args: Prisma.RoadmapFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RoadmapPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RoadmapFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RoadmapPayload>
+        }
+        findMany: {
+          args: Prisma.RoadmapFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RoadmapPayload>[]
+        }
+        create: {
+          args: Prisma.RoadmapCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RoadmapPayload>
+        }
+        createMany: {
+          args: Prisma.RoadmapCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.RoadmapCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RoadmapPayload>[]
+        }
+        delete: {
+          args: Prisma.RoadmapDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RoadmapPayload>
+        }
+        update: {
+          args: Prisma.RoadmapUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RoadmapPayload>
+        }
+        deleteMany: {
+          args: Prisma.RoadmapDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RoadmapUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.RoadmapUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RoadmapPayload>[]
+        }
+        upsert: {
+          args: Prisma.RoadmapUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RoadmapPayload>
+        }
+        aggregate: {
+          args: Prisma.RoadmapAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRoadmap>
+        }
+        groupBy: {
+          args: Prisma.RoadmapGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RoadmapGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RoadmapCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RoadmapCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1312,6 +1387,18 @@ export const BlockScalarFieldEnum = {
 } as const
 
 export type BlockScalarFieldEnum = (typeof BlockScalarFieldEnum)[keyof typeof BlockScalarFieldEnum]
+
+
+export const RoadmapScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  subject_id: 'subject_id',
+  data: 'data',
+  date_created: 'date_created',
+  updated_at: 'updated_at'
+} as const
+
+export type RoadmapScalarFieldEnum = (typeof RoadmapScalarFieldEnum)[keyof typeof RoadmapScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1542,6 +1629,7 @@ export type GlobalOmitConfig = {
   learning?: Prisma.LearningOmit
   note?: Prisma.NoteOmit
   block?: Prisma.BlockOmit
+  roadmap?: Prisma.RoadmapOmit
 }
 
 /* Types for Logging */

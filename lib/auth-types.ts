@@ -1,5 +1,6 @@
 export interface User {
   id: string
+  user_id: string
   email: string
   password: string
   name: string
@@ -7,7 +8,7 @@ export interface User {
 }
 
 export interface Session {
-  userId: string
+  user_id: string
   email: string
   name: string
   image?: string | null

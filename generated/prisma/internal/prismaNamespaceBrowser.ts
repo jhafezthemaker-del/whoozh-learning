@@ -60,7 +60,8 @@ export const ModelName = {
   Embedding: 'Embedding',
   Learning: 'Learning',
   Note: 'Note',
-  Block: 'Block'
+  Block: 'Block',
+  Roadmap: 'Roadmap'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -199,6 +200,18 @@ export const BlockScalarFieldEnum = {
 } as const
 
 export type BlockScalarFieldEnum = (typeof BlockScalarFieldEnum)[keyof typeof BlockScalarFieldEnum]
+
+
+export const RoadmapScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  subject_id: 'subject_id',
+  data: 'data',
+  date_created: 'date_created',
+  updated_at: 'updated_at'
+} as const
+
+export type RoadmapScalarFieldEnum = (typeof RoadmapScalarFieldEnum)[keyof typeof RoadmapScalarFieldEnum]
 
 
 export const SortOrder = {

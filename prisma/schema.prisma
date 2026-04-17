@@ -19,6 +19,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   learning      Learning[]
+  roadmaps      Roadmap[]
 
   @@map("users")
 }
@@ -135,4 +136,17 @@ model Block {
   note         Note     @relation(fields: [note_id], references: [note_id])
 
   @@map("blocks")
+}
+
+model Roadmap {
+  id           String   @id @default(uuid())
+  user_id      String
+  subject_id   String
+  data         Json
+  date_created DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  user         User     @relation(fields: [user_id], references: [user_id])
+
+  @@unique([user_id, subject_id])
+  @@map("roadmaps")
 }

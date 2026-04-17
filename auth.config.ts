@@ -10,9 +10,11 @@ export const authConfig = {
   },
   callbacks: {
     jwt({ token, user, trigger, session }: any) {
+      console.log('JWT callback - user:', user ? 'exists' : 'null', 'token.user_id:', token.user_id)
       if (user) {
-        token.id = user.id || (user as any).user_id
+        token.user_id = (user as any).user_id
         token.image = user.image
+        console.log('JWT callback - setting token.user_id to:', token.user_id)
       }
       if (trigger === "update" && session) {
         token.name = session.user.name
@@ -21,9 +23,11 @@ export const authConfig = {
       return token
     },
     session({ session, token }: any) {
+      console.log('Session callback - token.user_id:', token?.user_id)
       if (token && session.user) {
-        session.user.id = token.id as string
+        (session.user as any).user_id = token.user_id as string
         session.user.image = token.image as string
+        console.log('Session callback - setting session.user.user_id to:', (session.user as any).user_id)
       }
       return session
     },

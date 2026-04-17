@@ -91,3 +91,8 @@ export type Note = Prisma.NoteModel
  * 
  */
 export type Block = Prisma.BlockModel
+/**
+ * Model Roadmap
+ * 
+ */
+export type Roadmap = Prisma.RoadmapModel

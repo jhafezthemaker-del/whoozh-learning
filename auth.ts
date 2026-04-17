@@ -25,7 +25,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: credentials.email as string
           }
         })
-
+        console.log(user)
         if (!user || !user.password) {
           return null
         }
@@ -36,11 +36,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         )
 
         if (passwordsMatch) {
+          
           return user
         }
 
         return null
       }
     })
-  ]
+  ],
+  callbacks: {
+    ...authConfig.callbacks,
+    async session({ session, token }) {
+      console.log('Session callback (auth.ts) - token.user_id:', token?.user_id)
+      if (token && session.user) {
+        (session.user as any).user_id = token.user_id as string
+        session.user.image = token.image as string
+        console.log('Session callback (auth.ts) - setting session.user.user_id to:', (session.user as any).user_id)
+      }
+      return session
+    },
+  }
 })

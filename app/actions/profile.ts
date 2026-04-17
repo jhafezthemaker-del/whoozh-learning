@@ -9,7 +9,7 @@ import path from 'path'
 export async function updateProfileAction(formData: FormData) {
   const session = await auth()
   
-  if (!session?.user?.id) {
+  if (!session?.user?.user_id) {
     return { success: false, message: 'Not authenticated' }
   }
 
@@ -22,7 +22,7 @@ export async function updateProfileAction(formData: FormData) {
     if (file && file.size > 0) {
       const buffer = Buffer.from(await file.arrayBuffer())
       const fileExtension = path.extname(file.name)
-      const filename = `${session.user.id}-${Date.now()}${fileExtension}`
+      const filename = `${session.user.user_id}-${Date.now()}${fileExtension}`
       const uploadDir = path.join(process.cwd(), 'public', 'uploads')
       
       // Ensure directory exists
@@ -34,7 +34,7 @@ export async function updateProfileAction(formData: FormData) {
     }
 
     await prisma.user.update({
-      where: { user_id: session.user.id },
+      where: { user_id: session.user.user_id },
       data: {
         name,
         image: imageUrl,
@@ -54,7 +54,7 @@ import bcryptjs from 'bcryptjs'
 
 export async function changePasswordAction(formData: FormData) {
   const session = await auth()
-  if (!session?.user?.id) {
+  if (!session?.user?.user_id) {
     return { success: false, message: 'Not authenticated' }
   }
 
@@ -80,7 +80,7 @@ export async function changePasswordAction(formData: FormData) {
 
   try {
     const user = await prisma.user.findUnique({
-      where: { user_id: session.user.id },
+      where: { user_id: session.user.user_id },
     })
 
     if (!user || !user.password) {
@@ -95,7 +95,7 @@ export async function changePasswordAction(formData: FormData) {
     const hashedNewPassword = await bcryptjs.hash(newPassword, 10)
 
     await prisma.user.update({
-      where: { user_id: session.user.id },
+      where: { user_id: session.user.user_id },
       data: {
         password: hashedNewPassword,
       },

@@ -4,16 +4,24 @@ import { useState } from 'react'
 import { RoadmapData, saveRoadmapAction } from '@/app/actions/roadmap'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Calendar, Save, Loader2, Sparkles } from 'lucide-react'
+import { Calendar, Save, Loader2, Sparkles, Play } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface RoadmapEditorProps {
   initialData: RoadmapData
   subjectId: string
   onSave?: () => void
+  topButtonText?: string
+  bottomButtonText?: string
 }
 
-export default function RoadmapEditor({ initialData, subjectId, onSave }: RoadmapEditorProps) {
+export default function RoadmapEditor({ 
+  initialData, 
+  subjectId, 
+  onSave,
+  topButtonText = "Save Roadmap",
+  bottomButtonText = "Finalize and Save Roadmap"
+}: RoadmapEditorProps) {
   const [data, setData] = useState<RoadmapData>(initialData)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -35,7 +43,7 @@ export default function RoadmapEditor({ initialData, subjectId, onSave }: Roadma
     setIsSaving(false)
 
     if (result.success) {
-      toast.success('Roadmap saved successfully!')
+      toast.success(`${topButtonText.includes('Start') ? 'Learning started' : 'Roadmap saved'} successfully!`)
       onSave?.()
     } else {
       toast.error(result.message || 'Failed to save roadmap')
@@ -53,8 +61,14 @@ export default function RoadmapEditor({ initialData, subjectId, onSave }: Roadma
           <p className="text-muted-foreground">Adjust the schedule parts to fit your needs</p>
         </div>
         <Button onClick={handleSave} disabled={isSaving} className="gap-2">
-          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          Save Roadmap
+          {isSaving ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : topButtonText.includes('Start') ? (
+            <Play className="w-4 h-4" />
+          ) : (
+            <Save className="w-4 h-4" />
+          )}
+          {topButtonText}
         </Button>
       </div>
 
@@ -113,10 +127,17 @@ export default function RoadmapEditor({ initialData, subjectId, onSave }: Roadma
 
       <div className="flex justify-center pt-8 border-t border-border">
         <Button size="lg" onClick={handleSave} disabled={isSaving} className="px-12 h-14 text-lg font-bold gap-2 shadow-xl shadow-primary/20">
-          {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-          Finalize and Save Roadmap
+          {isSaving ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : bottomButtonText.includes('Start') ? (
+            <Play className="w-5 h-5" />
+          ) : (
+            <Save className="w-5 h-5" />
+          )}
+          {bottomButtonText}
         </Button>
       </div>
     </div>
   )
 }
+

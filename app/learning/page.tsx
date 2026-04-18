@@ -1,17 +1,34 @@
-'use client'
-
+import { auth } from '@/auth'
+import { prisma } from '@/lib/prisma'
+import { redirect } from 'next/navigation'
 import Header from '@/components/header'
 import { Button } from '@/components/ui/button'
-import { roadmapWeeks } from '@/lib/roadmap'
-import { Calendar } from 'lucide-react'
+import { RoadmapData } from '@/app/actions/roadmap'
+import RoadmapEditor from '@/components/roadmap-editor'
 
-export default function LearningPage() {
+export default async function LearningPage() {
+  const session = await auth()
+  
+  if (!session?.user || !(session.user as any).user_id) {
+    redirect('/auth/login')
+  }
+
+  const userId = (session.user as any).user_id
+
+  // Fetch the user's latest roadmap
+  const roadmapRecord = await prisma.roadmap.findFirst({
+    where: { user_id: userId },
+    orderBy: { date_created: 'desc' },
+  })
+
+  const roadmapData = roadmapRecord?.data as unknown as RoadmapData
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
       <main className="container mx-auto px-4 py-16">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-16">
             <h1 className="text-5xl font-bold text-foreground text-balance mb-3">
@@ -22,70 +39,26 @@ export default function LearningPage() {
             </p>
           </div>
 
-          {/* Weeks */}
-          <div className="space-y-8 mb-12">
-            {roadmapWeeks.map((week, weekIndex) => (
-              <div key={weekIndex} className="space-y-4">
-                {/* Week Title */}
-                <h2 className="text-3xl font-bold text-foreground">
-                  {week.title}
-                </h2>
-
-                {/* Days */}
-                <div className="space-y-4">
-                  {week.days.map((day, dayIndex) => (
-                    <div
-                      key={dayIndex}
-                      className="bg-secondary rounded-xl border border-border p-6 hover:shadow-md transition-all"
-                    >
-                      {/* Day Header */}
-                      <div className="flex items-center gap-3 mb-4">
-                        <Calendar className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-bold text-foreground">
-                          {day.title}
-                        </h3>
-                      </div>
-
-                      {/* Sessions as Bullets */}
-                      <ul className="space-y-2 ml-8">
-                        {day.sessions.map((session, sessionIndex) => (
-                          <li
-                            key={sessionIndex}
-                            className="flex items-start gap-3 text-foreground"
-                          >
-                            <span className="text-primary mt-1">•</span>
-                            <div>
-                              <span className="font-medium">{session.topic}</span>
-                              <span className="text-muted-foreground ml-2">
-                                {session.time}
-                              </span>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              variant="outline"
-              size="lg"
-              className="px-12 h-12 text-base font-semibold"
-            >
-              Update
-            </Button>
-            <Button
-              size="lg"
-              className="px-12 h-12 text-base font-semibold"
-            >
-              Start
-            </Button>
-          </div>
+          {!roadmapRecord ? (
+            <div className="text-center bg-secondary rounded-xl p-8 border border-border">
+              <h2 className="text-2xl font-bold text-foreground mb-4">No Roadmap Found</h2>
+              <p className="text-muted-foreground mb-6">
+                You haven't generated a roadmap yet. Generate one to get started!
+              </p>
+              <Button size="lg" className="px-8" asChild>
+                <a href="/">Go to Subjects</a>
+              </Button>
+            </div>
+          ) : (
+            <div className="mb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <RoadmapEditor 
+                initialData={roadmapData} 
+                subjectId={roadmapRecord.subject_id} 
+                topButtonText="Start Learning"
+                bottomButtonText="Start Learning"
+              />
+            </div>
+          )}
         </div>
       </main>
     </div>

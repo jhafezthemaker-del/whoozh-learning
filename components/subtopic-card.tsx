@@ -11,7 +11,7 @@ interface SubtopicCardProps {
 
 export default function SubtopicCard({ subtopic, categoryId }: SubtopicCardProps) {
   return (
-    <Link href={`/topic/${subtopic.id}`}>
+    <Link href={`/topic/${categoryId}/${subtopic.id}`}>
       <div className="group h-full bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-primary/30 hover:scale-105 cursor-pointer">
         <div className="flex items-start justify-between mb-4">
           <div className="text-3xl mb-2">{subtopic.icon}</div>

@@ -23,7 +23,7 @@ const RoadmapSchema = z.object({
 
 export type RoadmapData = z.infer<typeof RoadmapSchema>
 
-export async function generateRoadmapAction(subjectId: string, subjectName: string) {
+export async function generateRoadmapAction(subjectName: string) {
   const session = await auth()
   if (!session?.user?.user_id) {
     throw new Error('Not authenticated')
@@ -106,5 +106,31 @@ export async function getRoadmapAction(subjectId: string) {
   } catch (error) {
     console.error('Error fetching roadmap:', error)
     return null
+  }
+}
+
+export async function getAllRoadmapsAction() {
+  const session = await auth()
+  if (!session?.user?.user_id) {
+    return []
+  }
+
+  try {
+    const roadmaps = await prisma.roadmap.findMany({
+      where: {
+        user_id: session.user.user_id,
+      },
+      orderBy: {
+        updated_at: 'desc',
+      },
+    })
+
+    return roadmaps.map(roadmap => ({
+      ...roadmap,
+      data: roadmap.data as unknown as RoadmapData
+    }))
+  } catch (error) {
+    console.error('Error fetching all roadmaps:', error)
+    return []
   }
 }

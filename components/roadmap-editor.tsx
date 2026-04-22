@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Calendar, Save, Loader2, Sparkles, Play } from 'lucide-react'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 interface RoadmapEditorProps {
   initialData: RoadmapData
@@ -13,6 +14,7 @@ interface RoadmapEditorProps {
   onSave?: () => void
   topButtonText?: string
   bottomButtonText?: string
+  redirectUrl?: string
 }
 
 export default function RoadmapEditor({ 
@@ -20,8 +22,10 @@ export default function RoadmapEditor({
   subjectId, 
   onSave,
   topButtonText = "Save Roadmap",
-  bottomButtonText = "Finalize and Save Roadmap"
+  bottomButtonText = "Finalize and Save Roadmap",
+  redirectUrl
 }: RoadmapEditorProps) {
+  const router = useRouter()
   const [data, setData] = useState<RoadmapData>(initialData)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -45,6 +49,9 @@ export default function RoadmapEditor({
     if (result.success) {
       toast.success(`${topButtonText.includes('Start') ? 'Learning started' : 'Roadmap saved'} successfully!`)
       onSave?.()
+      if (redirectUrl) {
+        router.push(redirectUrl)
+      }
     } else {
       toast.error(result.message || 'Failed to save roadmap')
     }

@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
@@ -149,4 +149,29 @@ model Roadmap {
 
   @@unique([user_id, subject_id])
   @@map("roadmaps")
+}
+
+model LearningSource {
+  id          String   @id @default(uuid())
+  subject_id  String
+  title       String
+  description String
+  created_at  DateTime @default(now())
+
+  @@map("learning_sources")
+}
+
+model LearningResource {
+  id          String   @id @default(uuid())
+  subject_id  String
+  topic_name  String
+  title       String
+  description String
+  type        String   // 'pdf' | 'video'
+  url         String
+  duration    String?
+  created_at  DateTime @default(now())
+
+  @@index([subject_id, topic_name])
+  @@map("learning_resources")
 }

@@ -394,7 +394,9 @@ export const ModelName = {
   Learning: 'Learning',
   Note: 'Note',
   Block: 'Block',
-  Roadmap: 'Roadmap'
+  Roadmap: 'Roadmap',
+  LearningSource: 'LearningSource',
+  LearningResource: 'LearningResource'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -410,7 +412,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "account" | "session" | "source" | "conversation" | "message" | "embedding" | "learning" | "note" | "block" | "roadmap"
+    modelProps: "user" | "account" | "session" | "source" | "conversation" | "message" | "embedding" | "learning" | "note" | "block" | "roadmap" | "learningSource" | "learningResource"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1228,6 +1230,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    LearningSource: {
+      payload: Prisma.$LearningSourcePayload<ExtArgs>
+      fields: Prisma.LearningSourceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LearningSourceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningSourcePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LearningSourceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningSourcePayload>
+        }
+        findFirst: {
+          args: Prisma.LearningSourceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningSourcePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LearningSourceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningSourcePayload>
+        }
+        findMany: {
+          args: Prisma.LearningSourceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningSourcePayload>[]
+        }
+        create: {
+          args: Prisma.LearningSourceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningSourcePayload>
+        }
+        createMany: {
+          args: Prisma.LearningSourceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.LearningSourceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningSourcePayload>[]
+        }
+        delete: {
+          args: Prisma.LearningSourceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningSourcePayload>
+        }
+        update: {
+          args: Prisma.LearningSourceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningSourcePayload>
+        }
+        deleteMany: {
+          args: Prisma.LearningSourceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LearningSourceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.LearningSourceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningSourcePayload>[]
+        }
+        upsert: {
+          args: Prisma.LearningSourceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningSourcePayload>
+        }
+        aggregate: {
+          args: Prisma.LearningSourceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLearningSource>
+        }
+        groupBy: {
+          args: Prisma.LearningSourceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LearningSourceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LearningSourceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LearningSourceCountAggregateOutputType> | number
+        }
+      }
+    }
+    LearningResource: {
+      payload: Prisma.$LearningResourcePayload<ExtArgs>
+      fields: Prisma.LearningResourceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LearningResourceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningResourcePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LearningResourceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningResourcePayload>
+        }
+        findFirst: {
+          args: Prisma.LearningResourceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningResourcePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LearningResourceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningResourcePayload>
+        }
+        findMany: {
+          args: Prisma.LearningResourceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningResourcePayload>[]
+        }
+        create: {
+          args: Prisma.LearningResourceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningResourcePayload>
+        }
+        createMany: {
+          args: Prisma.LearningResourceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.LearningResourceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningResourcePayload>[]
+        }
+        delete: {
+          args: Prisma.LearningResourceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningResourcePayload>
+        }
+        update: {
+          args: Prisma.LearningResourceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningResourcePayload>
+        }
+        deleteMany: {
+          args: Prisma.LearningResourceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LearningResourceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.LearningResourceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningResourcePayload>[]
+        }
+        upsert: {
+          args: Prisma.LearningResourceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LearningResourcePayload>
+        }
+        aggregate: {
+          args: Prisma.LearningResourceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLearningResource>
+        }
+        groupBy: {
+          args: Prisma.LearningResourceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LearningResourceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LearningResourceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LearningResourceCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1399,6 +1549,32 @@ export const RoadmapScalarFieldEnum = {
 } as const
 
 export type RoadmapScalarFieldEnum = (typeof RoadmapScalarFieldEnum)[keyof typeof RoadmapScalarFieldEnum]
+
+
+export const LearningSourceScalarFieldEnum = {
+  id: 'id',
+  subject_id: 'subject_id',
+  title: 'title',
+  description: 'description',
+  created_at: 'created_at'
+} as const
+
+export type LearningSourceScalarFieldEnum = (typeof LearningSourceScalarFieldEnum)[keyof typeof LearningSourceScalarFieldEnum]
+
+
+export const LearningResourceScalarFieldEnum = {
+  id: 'id',
+  subject_id: 'subject_id',
+  topic_name: 'topic_name',
+  title: 'title',
+  description: 'description',
+  type: 'type',
+  url: 'url',
+  duration: 'duration',
+  created_at: 'created_at'
+} as const
+
+export type LearningResourceScalarFieldEnum = (typeof LearningResourceScalarFieldEnum)[keyof typeof LearningResourceScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1630,6 +1806,8 @@ export type GlobalOmitConfig = {
   note?: Prisma.NoteOmit
   block?: Prisma.BlockOmit
   roadmap?: Prisma.RoadmapOmit
+  learningSource?: Prisma.LearningSourceOmit
+  learningResource?: Prisma.LearningResourceOmit
 }
 
 /* Types for Logging */

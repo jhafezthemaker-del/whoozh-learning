@@ -61,7 +61,9 @@ export const ModelName = {
   Learning: 'Learning',
   Note: 'Note',
   Block: 'Block',
-  Roadmap: 'Roadmap'
+  Roadmap: 'Roadmap',
+  LearningSource: 'LearningSource',
+  LearningResource: 'LearningResource'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -212,6 +214,32 @@ export const RoadmapScalarFieldEnum = {
 } as const
 
 export type RoadmapScalarFieldEnum = (typeof RoadmapScalarFieldEnum)[keyof typeof RoadmapScalarFieldEnum]
+
+
+export const LearningSourceScalarFieldEnum = {
+  id: 'id',
+  subject_id: 'subject_id',
+  title: 'title',
+  description: 'description',
+  created_at: 'created_at'
+} as const
+
+export type LearningSourceScalarFieldEnum = (typeof LearningSourceScalarFieldEnum)[keyof typeof LearningSourceScalarFieldEnum]
+
+
+export const LearningResourceScalarFieldEnum = {
+  id: 'id',
+  subject_id: 'subject_id',
+  topic_name: 'topic_name',
+  title: 'title',
+  description: 'description',
+  type: 'type',
+  url: 'url',
+  duration: 'duration',
+  created_at: 'created_at'
+} as const
+
+export type LearningResourceScalarFieldEnum = (typeof LearningResourceScalarFieldEnum)[keyof typeof LearningResourceScalarFieldEnum]
 
 
 export const SortOrder = {

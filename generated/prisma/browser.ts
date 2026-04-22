@@ -72,3 +72,13 @@ export type Block = Prisma.BlockModel
  * 
  */
 export type Roadmap = Prisma.RoadmapModel
+/**
+ * Model LearningSource
+ * 
+ */
+export type LearningSource = Prisma.LearningSourceModel
+/**
+ * Model LearningResource
+ * 
+ */
+export type LearningResource = Prisma.LearningResourceModel

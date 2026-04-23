@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Resource } from '@/lib/learning-materials'
-import { FileText, Play, X, ArrowLeft, Clock, ChevronDown } from 'lucide-react'
+import { FileText, Play, X, ArrowLeft, Clock, ChevronDown, ExternalLink } from 'lucide-react'
 import { Button } from './ui/button'
 import {
   DropdownMenu,
@@ -68,18 +68,35 @@ export default function LessonResources({ resources, topicTitle }: LessonResourc
               </div>
             </div>
           ) : (
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-muted rounded-xl border border-border p-12 text-center h-96 flex items-center justify-center">
-                <div className="space-y-4">
-                  <FileText className="w-16 h-16 text-muted-foreground mx-auto" />
+            <div className="max-w-5xl mx-auto h-[75vh] flex flex-col">
+              <div className="flex justify-between items-center mb-4 bg-muted/50 p-4 rounded-lg border border-border">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-500/10 rounded-md">
+                    <FileText className="w-5 h-5 text-blue-500" />
+                  </div>
                   <div>
-                    <p className="text-foreground font-medium mb-2">PDF Document</p>
-                    <p className="text-muted-foreground text-sm">{selectedResource.title}</p>
-                    <Button className="mt-4" size="sm">
-                      Download PDF
-                    </Button>
+                    <p className="font-medium text-sm text-foreground">Document Viewer</p>
+                    <p className="text-xs text-muted-foreground">If the document doesn't load below, it may require opening in a new tab.</p>
                   </div>
                 </div>
+                <a href={selectedResource.url} target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="default" className="gap-2">
+                    Open in New Tab <ExternalLink className="w-4 h-4" />
+                  </Button>
+                </a>
+              </div>
+              <div className="bg-muted rounded-xl overflow-hidden border border-border flex-1">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={selectedResource.url.endsWith('.pdf') ? selectedResource.url : `https://docs.google.com/viewer?url=${encodeURIComponent(selectedResource.url)}&embedded=true`}
+                  title={selectedResource.title}
+                  className="w-full h-full border-0 bg-white"
+                  onError={(e) => {
+                    // Fallback if iframe fails to load completely
+                    (e.target as HTMLIFrameElement).style.display = 'none';
+                  }}
+                />
               </div>
             </div>
           )}

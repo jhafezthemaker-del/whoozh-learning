@@ -71,7 +71,7 @@ export async function getOrGenerateResourcesAction(topicName: string, subjectId:
     prompt: `Generate 4 specific learning resources for the topic: "${topicName}" within the subject: "${subjectName}".
     Include 2 videos and 2 PDF/Reading resources.
     For videos, PROVIDE VALID, REAL YOUTUBE EMBED URLS (e.g., https://www.youtube.com/embed/VIDEO_ID).
-    For PDFs, provide a placeholder description of where to find the material.
+    For PDFs, provide a valid, public PDF URL (e.g., https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf). Do not provide descriptive text in the url field.
     Ensure titles and descriptions are professional.`
   })
 
@@ -92,3 +92,48 @@ export async function getOrGenerateResourcesAction(topicName: string, subjectId:
 
   return saved
 }
+
+export async function addManualResourceAction(data: {
+  subjectId: string;
+  topicName: string;
+  title: string;
+  description: string;
+  type: string;
+  url: string;
+}) {
+  const saved = await prisma.learningResource.create({
+    data: {
+      subject_id: data.subjectId,
+      topic_name: data.topicName,
+      title: data.title,
+      description: data.description,
+      type: data.type,
+      url: data.url,
+    }
+  });
+  return saved;
+}
+
+const SingleResourceSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  type: z.enum(['pdf', 'video']),
+  url: z.string(),
+  duration: z.string().optional(),
+});
+
+export async function findAiResourceAction(query: string, topicName: string) {
+  const { output } = await generateText({
+    model: google('gemini-3-pro-preview'),
+    output: Output.object({ schema: ResourceSchema }),
+    prompt: `Find 3 high-quality learning resources based on the user's request: "${query}".
+    This is for the topic: "${topicName}".
+    Include a mix of videos and PDF/Reading resources.
+    For videos, PROVIDE VALID, REAL YOUTUBE EMBED URLS (e.g., https://www.youtube.com/embed/VIDEO_ID).
+    For PDFs, provide a valid, public PDF URL (e.g., https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf).
+    Ensure titles and descriptions are professional.`
+  })
+
+  return output.resources;
+}
+

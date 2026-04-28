@@ -154,6 +154,8 @@ export default function LearningLabClientPage({
                 <LessonResources
                   resources={resources}
                   topicTitle={currentTopic}
+                  subjectId={subjectId}
+                  onResourceAdded={(newResource) => setResources(prev => [...prev, newResource])}
                 />
               )}
             </div>

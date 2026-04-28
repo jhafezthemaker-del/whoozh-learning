@@ -10,10 +10,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
+import { AddResourceModal } from './add-resource-modal'
 
 interface LessonResourcesProps {
   resources: Resource[]
   topicTitle: string
+  subjectId: string
+  onResourceAdded: (resource: Resource) => void
 }
 
 const TOPICS = [
@@ -29,7 +32,18 @@ const getFormattedTime = () => {
   return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
 }
 
-export default function LessonResources({ resources, topicTitle }: LessonResourcesProps) {
+const isValidUrl = (urlString: string) => {
+  if (!urlString) return false
+  if (urlString.startsWith('/') || urlString.startsWith('./')) return true
+  try {
+    new URL(urlString)
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
+export default function LessonResources({ resources, topicTitle, subjectId, onResourceAdded }: LessonResourcesProps) {
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null)
   const [selectedTopicId, setSelectedTopicId] = useState(1)
 
@@ -79,24 +93,49 @@ export default function LessonResources({ resources, topicTitle }: LessonResourc
                     <p className="text-xs text-muted-foreground">If the document doesn't load below, it may require opening in a new tab.</p>
                   </div>
                 </div>
-                <a href={selectedResource.url} target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="default" className="gap-2">
-                    Open in New Tab <ExternalLink className="w-4 h-4" />
-                  </Button>
-                </a>
+                {isValidUrl(selectedResource.url) && (
+                  <a href={selectedResource.url} target="_blank" rel="noopener noreferrer">
+                    <Button size="sm" variant="default" className="gap-2">
+                      Open in New Tab <ExternalLink className="w-4 h-4" />
+                    </Button>
+                  </a>
+                )}
               </div>
               <div className="bg-muted rounded-xl overflow-hidden border border-border flex-1">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src={selectedResource.url.endsWith('.pdf') ? selectedResource.url : `https://docs.google.com/viewer?url=${encodeURIComponent(selectedResource.url)}&embedded=true`}
-                  title={selectedResource.title}
-                  className="w-full h-full border-0 bg-white"
-                  onError={(e) => {
-                    // Fallback if iframe fails to load completely
-                    (e.target as HTMLIFrameElement).style.display = 'none';
-                  }}
-                />
+                {isValidUrl(selectedResource.url) ? (
+                  <object
+                    data={selectedResource.url}
+                    type={selectedResource.url.toLowerCase().includes('.pdf') ? 'application/pdf' : undefined}
+                    className="w-full h-full border-0 bg-white"
+                  >
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      src={
+                        selectedResource.url.toLowerCase().includes('.pdf') && 
+                        !selectedResource.url.includes('localhost') && 
+                        !selectedResource.url.startsWith('/')
+                          ? `https://docs.google.com/viewer?url=${encodeURIComponent(selectedResource.url)}&embedded=true`
+                          : selectedResource.url
+                      }
+                      title={selectedResource.title}
+                      className="w-full h-full border-0 bg-white"
+                      onError={(e) => {
+                        (e.target as HTMLIFrameElement).style.display = 'none';
+                      }}
+                    />
+                  </object>
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-background">
+                    <div className="text-center max-w-md">
+                      <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FileText className="w-8 h-8 text-blue-500" />
+                      </div>
+                      <h3 className="text-lg font-medium text-foreground mb-2">Resource Details</h3>
+                      <p className="text-muted-foreground">{selectedResource.url}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -151,9 +190,16 @@ export default function LessonResources({ resources, topicTitle }: LessonResourc
       </div>
 
       {/* Header */}
-      <div className="border-b border-border p-6">
-        <h2 className="text-2xl font-bold text-foreground">Learning Resources</h2>
-        <p className="text-sm text-muted-foreground mt-1">{topicTitle}</p>
+      <div className="border-b border-border p-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">Learning Resources</h2>
+          <p className="text-sm text-muted-foreground mt-1">{topicTitle}</p>
+        </div>
+        <AddResourceModal 
+          subjectId={subjectId} 
+          topicName={topicTitle} 
+          onResourceAdded={onResourceAdded} 
+        />
       </div>
 
       {/* Resources Grid */}

@@ -1,21 +1,21 @@
 'use client'
-
-import { useState } from 'react'
+ 
+import { useState, useEffect } from 'react'
 import { Resource } from '@/lib/learning-materials'
 import { FileText, Play, X, ArrowLeft, Clock, ChevronDown, ExternalLink } from 'lucide-react'
 import { Button } from './ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from './ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import { AddResourceModal } from './add-resource-modal'
+import { generateQuizAction, getQuizAction } from '@/app/actions/learning-materials'
+import QuizSection from './quiz-section'
+import { Brain, Sparkles, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface LessonResourcesProps {
   resources: Resource[]
   topicTitle: string
   subjectId: string
+  subjectName: string
   onResourceAdded: (resource: Resource) => void
 }
 
@@ -43,9 +43,39 @@ const isValidUrl = (urlString: string) => {
   }
 }
 
-export default function LessonResources({ resources, topicTitle, subjectId, onResourceAdded }: LessonResourcesProps) {
+export default function LessonResources({ resources, topicTitle, subjectId, subjectName, onResourceAdded }: LessonResourcesProps) {
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null)
   const [selectedTopicId, setSelectedTopicId] = useState(1)
+  const [quiz, setQuiz] = useState<any>(null)
+  const [generatingQuiz, setGeneratingQuiz] = useState(false)
+
+  // Fetch quiz on topic change
+  useEffect(() => {
+    async function fetchQuiz() {
+      if (!topicTitle || !subjectId) return
+      try {
+        const existingQuiz = await getQuizAction(subjectId, topicTitle)
+        setQuiz(existingQuiz)
+      } catch (error) {
+        console.error('Failed to fetch quiz', error)
+      }
+    }
+    fetchQuiz()
+  }, [topicTitle, subjectId])
+
+  const handleGenerateQuiz = async () => {
+    setGeneratingQuiz(true)
+    try {
+      const newQuiz = await generateQuizAction(subjectId, topicTitle, subjectName)
+      setQuiz(newQuiz)
+      toast.success('AI Quiz generated successfully!')
+    } catch (error) {
+      console.error('Failed to generate quiz', error)
+      toast.error('Failed to generate AI quiz')
+    } finally {
+      setGeneratingQuiz(false)
+    }
+  }
 
   if (selectedResource) {
     return (
@@ -195,11 +225,28 @@ export default function LessonResources({ resources, topicTitle, subjectId, onRe
           <h2 className="text-2xl font-bold text-foreground">Learning Resources</h2>
           <p className="text-sm text-muted-foreground mt-1">{topicTitle}</p>
         </div>
-        <AddResourceModal 
-          subjectId={subjectId} 
-          topicName={topicTitle} 
-          onResourceAdded={onResourceAdded} 
-        />
+        <div className="flex items-center gap-3">
+          {!quiz && (
+            <Button
+              onClick={handleGenerateQuiz}
+              disabled={generatingQuiz}
+              variant="outline"
+              className="gap-2 border-primary/20 hover:border-primary/40 bg-primary/5 hover:bg-primary/10 text-primary transition-all"
+            >
+              {generatingQuiz ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Sparkles className="w-4 h-4" />
+              )}
+              {generatingQuiz ? 'Generating...' : 'AI Quiz'}
+            </Button>
+          )}
+          <AddResourceModal 
+            subjectId={subjectId} 
+            topicName={topicTitle} 
+            onResourceAdded={onResourceAdded} 
+          />
+        </div>
       </div>
 
       {/* Resources Grid */}
@@ -264,6 +311,17 @@ export default function LessonResources({ resources, topicTitle, subjectId, onRe
               </div>
             </button>
           ))}
+
+          {/* Quiz Section Integration */}
+          {quiz && (
+            <div className="pt-8 mt-8 border-t border-border">
+              <div className="flex items-center gap-2 mb-4 text-primary font-semibold">
+                <Brain className="w-5 h-5" />
+                <span>AI Assessment</span>
+              </div>
+              <QuizSection quiz={quiz} />
+            </div>
+          )}
         </div>
       </div>
     </div>

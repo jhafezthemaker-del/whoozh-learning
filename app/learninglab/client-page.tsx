@@ -155,6 +155,7 @@ export default function LearningLabClientPage({
                   resources={resources}
                   topicTitle={currentTopic}
                   subjectId={subjectId}
+                  subjectName={subjectName}
                   onResourceAdded={(newResource) => setResources(prev => [...prev, newResource])}
                 />
               )}

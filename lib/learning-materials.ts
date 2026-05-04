@@ -22,6 +22,20 @@ export interface LessonMaterial {
   resources: Resource[]
 }
 
+export interface QuizQuestion {
+  question: string
+  options: string[]
+  correctAnswer: string
+}
+
+export interface Quiz {
+  id: string
+  subject_id: string
+  topic_name: string
+  title: string
+  questions: QuizQuestion[]
+}
+
 export const sources: Source[] = [
   {
     id: 'phrasal-verbs-100',

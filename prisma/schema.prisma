@@ -175,3 +175,15 @@ model LearningResource {
   @@index([subject_id, topic_name])
   @@map("learning_resources")
 }
+
+model Quiz {
+  id          String   @id @default(uuid())
+  subject_id  String
+  topic_name  String
+  title       String
+  questions   Json     // Storing questions as JSON for simplicity
+  created_at  DateTime @default(now())
+
+  @@index([subject_id, topic_name])
+  @@map("quizzes")
+}

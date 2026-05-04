@@ -137,3 +137,48 @@ export async function findAiResourceAction(query: string, topicName: string) {
   return output.resources;
 }
 
+const QuizSchema = z.object({
+  title: z.string(),
+  questions: z.array(z.object({
+    question: z.string(),
+    options: z.array(z.string()),
+    correctAnswer: z.string(),
+  }))
+})
+
+export async function getQuizAction(subjectId: string, topicName: string) {
+  return await prisma.quiz.findFirst({
+    where: {
+      subject_id: subjectId,
+      topic_name: topicName
+    }
+  })
+}
+
+export async function generateQuizAction(subjectId: string, topicName: string, subjectName: string) {
+  // Check if exists
+  const existing = await getQuizAction(subjectId, topicName)
+  if (existing) return existing
+
+  // Generate
+  const { output } = await generateText({
+    model: google('gemini-3-pro-preview'),
+    output: Output.object({ schema: QuizSchema }),
+    prompt: `Generate a 5-question multiple-choice quiz for the topic: "${topicName}" within the subject: "${subjectName}".
+    Ensure the questions are challenging but fair.
+    Provide 4 options for each question and clearly specify the correct answer (which must be one of the options).`
+  })
+
+  // Save
+  const saved = await prisma.quiz.create({
+    data: {
+      subject_id: subjectId,
+      topic_name: topicName,
+      title: output.title,
+      questions: output.questions as any,
+    }
+  })
+
+  return saved
+}
+

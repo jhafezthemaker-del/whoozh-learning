@@ -241,6 +241,15 @@ exports.Prisma.LearningResourceScalarFieldEnum = {
   created_at: 'created_at'
 };
 
+exports.Prisma.QuizScalarFieldEnum = {
+  id: 'id',
+  subject_id: 'subject_id',
+  topic_name: 'topic_name',
+  title: 'title',
+  questions: 'questions',
+  created_at: 'created_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -285,7 +294,8 @@ exports.Prisma.ModelName = {
   Block: 'Block',
   Roadmap: 'Roadmap',
   LearningSource: 'LearningSource',
-  LearningResource: 'LearningResource'
+  LearningResource: 'LearningResource',
+  Quiz: 'Quiz'
 };
 
 /**

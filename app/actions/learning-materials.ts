@@ -146,20 +146,19 @@ const QuizSchema = z.object({
   }))
 })
 
-export async function getQuizAction(subjectId: string, topicName: string) {
-  return await prisma.quiz.findFirst({
+export async function getQuizzesAction(subjectId: string, topicName: string) {
+  return await prisma.quiz.findMany({
     where: {
       subject_id: subjectId,
       topic_name: topicName
+    },
+    orderBy: {
+      created_at: 'desc'
     }
   })
 }
 
 export async function generateQuizAction(subjectId: string, topicName: string, subjectName: string) {
-  // Check if exists
-  const existing = await getQuizAction(subjectId, topicName)
-  if (existing) return existing
-
   // Generate
   const { output } = await generateText({
     model: google('gemini-3-pro-preview'),

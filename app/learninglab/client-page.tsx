@@ -117,7 +117,7 @@ export default function LearningLabClientPage({
   }, [isResizing])
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen bg-background overflow-hidden flex flex-col">
       <Header />
       
       <div className="flex h-[calc(100vh-64px)]">

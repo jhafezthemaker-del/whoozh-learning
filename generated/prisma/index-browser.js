@@ -246,6 +246,7 @@ exports.Prisma.QuizScalarFieldEnum = {
   subject_id: 'subject_id',
   topic_name: 'topic_name',
   title: 'title',
+  description: 'description',
   questions: 'questions',
   created_at: 'created_at'
 };

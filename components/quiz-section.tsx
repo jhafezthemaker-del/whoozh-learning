@@ -73,40 +73,73 @@ export default function QuizSection({ quiz }: QuizSectionProps) {
   }
 
   return (
-    <div className="mt-8 space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xl font-bold text-foreground">Topic Quiz: {quiz.title}</h3>
+    <div className="mt-8 space-y-6 animate-in fade-in duration-500 w-full max-w-4xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+        <div className="space-y-1">
+          <h3 className="text-2xl font-bold text-foreground">Topic Quiz: {quiz.title}</h3>
+          {quiz.description && (
+            <p className="text-sm text-muted-foreground italic line-clamp-2 max-w-2xl">
+              {quiz.description}
+            </p>
+          )}
+        </div>
         <span className="text-sm font-medium text-muted-foreground">
           Question {currentQuestionIndex + 1} of {quiz.questions.length}
         </span>
       </div>
 
-      <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
+      <div className="relative w-full bg-secondary h-3 rounded-full overflow-hidden shadow-inner">
         <div 
-          className="bg-primary h-full transition-all duration-500"
+          className="absolute left-0 top-0 bg-gradient-to-r from-primary via-primary/80 to-primary h-full transition-all duration-700 ease-out rounded-full shadow-[0_0_10px_rgba(var(--primary),0.3)]"
           style={{ width: `${((currentQuestionIndex + 1) / quiz.questions.length) * 100}%` }}
-        />
+        >
+          <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.2)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem] animate-[progress-stripe_1s_linear_infinite]" />
+        </div>
       </div>
 
       <div 
         key={currentQuestionIndex}
-        className="p-6 rounded-2xl border border-border bg-card shadow-sm animate-in fade-in slide-in-from-right-4 duration-300"
+        className="p-8 rounded-3xl border border-border bg-card shadow-xl shadow-primary/5 animate-in fade-in slide-in-from-right-8 duration-500 relative overflow-hidden"
       >
-        <p className="text-lg font-medium text-foreground mb-6">{currentQuestion.question}</p>
+        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+          <Trophy className="w-24 h-24 text-primary" />
+        </div>
+
+        <div className="flex items-center gap-3 mb-6">
+          <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-sm ${
+            currentQuestion.type === 'multiple-choice' ? 'bg-blue-500/10 text-blue-600 border border-blue-500/20' :
+            currentQuestion.type === 'true-false' ? 'bg-purple-500/10 text-purple-600 border border-purple-500/20' :
+            'bg-orange-500/10 text-orange-600 border border-orange-500/20'
+          }`}>
+            {currentQuestion.type?.replace('-', ' ') || 'Quiz'}
+          </div>
+          <div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+            Level: Advanced
+          </span>
+        </div>
+
+        <h4 className="text-2xl font-bold text-foreground mb-8 leading-tight">
+          {currentQuestion.question.split(/(\[blank\])/g).map((part, i) => 
+            part === '[blank]' ? (
+              <span key={i} className="inline-block min-w-[120px] border-b-4 border-primary/40 mx-2 bg-primary/5 rounded-t-lg h-8 translate-y-2" />
+            ) : part
+          )}
+        </h4>
         
-        <div className="grid gap-3">
+        <div className="grid gap-4">
           {currentQuestion.options.map((option, index) => {
             const isSelected = selectedAnswer === option
             const isCorrect = option === currentQuestion.correctAnswer
             const isWrong = isSelected && !isCorrect
 
-            let variantClass = "border-border hover:border-primary/50 hover:bg-primary/5"
+            let variantClass = "border-border bg-card hover:border-primary/40 hover:bg-primary/5 hover:translate-x-1"
             if (showFeedback) {
-              if (isCorrect) variantClass = "border-green-500 bg-green-500/10 text-green-700 dark:text-green-400"
-              else if (isWrong) variantClass = "border-red-500 bg-red-500/10 text-red-700 dark:text-red-400"
-              else variantClass = "opacity-50 cursor-not-allowed"
+              if (isCorrect) variantClass = "border-green-500 bg-green-500/10 text-green-700 dark:text-green-400 scale-[1.02] shadow-lg shadow-green-500/10"
+              else if (isWrong) variantClass = "border-red-500 bg-red-500/10 text-red-700 dark:text-red-400 opacity-90"
+              else variantClass = "opacity-40 grayscale-[0.5] cursor-not-allowed"
             } else if (isSelected) {
-              variantClass = "border-primary bg-primary/10 text-primary"
+              variantClass = "border-primary bg-primary/10 text-primary ring-1 ring-primary/30 translate-x-2"
             }
 
             return (
@@ -114,32 +147,47 @@ export default function QuizSection({ quiz }: QuizSectionProps) {
                 key={index}
                 onClick={() => handleAnswerSelect(option)}
                 disabled={showFeedback}
-                className={`w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-center justify-between group ${variantClass}`}
+                className={`w-full text-left p-5 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between group relative overflow-hidden ${variantClass}`}
               >
-                <span className="font-medium">{option}</span>
-                {showFeedback && isCorrect && <CheckCircle2 className="w-5 h-5 text-green-500" />}
-                {showFeedback && isWrong && <XCircle className="w-5 h-5 text-red-500" />}
+                <div className="flex items-center gap-4">
+                  <div className={`w-8 h-8 rounded-xl border-2 flex items-center justify-center font-bold text-xs transition-colors ${
+                    isSelected ? 'bg-primary border-primary text-white' : 'border-border text-muted-foreground group-hover:border-primary/30'
+                  }`}>
+                    {String.fromCharCode(65 + index)}
+                  </div>
+                  <span className="font-semibold text-base">{option}</span>
+                </div>
+                {showFeedback && isCorrect && (
+                  <div className="bg-green-500 rounded-full p-1 animate-in zoom-in duration-300">
+                    <CheckCircle2 className="w-5 h-5 text-white" />
+                  </div>
+                )}
+                {showFeedback && isWrong && (
+                  <div className="bg-red-500 rounded-full p-1 animate-in zoom-in duration-300">
+                    <XCircle className="w-5 h-5 text-white" />
+                  </div>
+                )}
               </button>
             )
           })}
         </div>
 
-        <div className="mt-8 flex justify-end">
+        <div className="mt-10 flex justify-end">
           {!showFeedback ? (
             <Button 
               onClick={handleSubmitAnswer} 
               disabled={!selectedAnswer}
-              className="px-8"
+              className="h-12 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
             >
               Submit Answer
             </Button>
           ) : (
             <Button 
               onClick={handleNextQuestion}
-              className="gap-2 px-8"
+              className="h-12 px-10 rounded-2xl bg-foreground hover:bg-foreground/90 text-background font-bold shadow-lg transition-all active:scale-95 flex items-center gap-2"
             >
-              {currentQuestionIndex < quiz.questions.length - 1 ? 'Next Question' : 'Show Results'}
-              <ArrowRight className="w-4 h-4" />
+              {currentQuestionIndex < quiz.questions.length - 1 ? 'Next Question' : 'Complete Assessment'}
+              <ArrowRight className="w-5 h-5" />
             </Button>
           )}
         </div>

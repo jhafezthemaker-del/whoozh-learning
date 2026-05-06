@@ -16377,6 +16377,7 @@ export namespace Prisma {
     subject_id: string | null
     topic_name: string | null
     title: string | null
+    description: string | null
     created_at: Date | null
   }
 
@@ -16385,6 +16386,7 @@ export namespace Prisma {
     subject_id: string | null
     topic_name: string | null
     title: string | null
+    description: string | null
     created_at: Date | null
   }
 
@@ -16393,6 +16395,7 @@ export namespace Prisma {
     subject_id: number
     topic_name: number
     title: number
+    description: number
     questions: number
     created_at: number
     _all: number
@@ -16404,6 +16407,7 @@ export namespace Prisma {
     subject_id?: true
     topic_name?: true
     title?: true
+    description?: true
     created_at?: true
   }
 
@@ -16412,6 +16416,7 @@ export namespace Prisma {
     subject_id?: true
     topic_name?: true
     title?: true
+    description?: true
     created_at?: true
   }
 
@@ -16420,6 +16425,7 @@ export namespace Prisma {
     subject_id?: true
     topic_name?: true
     title?: true
+    description?: true
     questions?: true
     created_at?: true
     _all?: true
@@ -16502,6 +16508,7 @@ export namespace Prisma {
     subject_id: string
     topic_name: string
     title: string
+    description: string | null
     questions: JsonValue
     created_at: Date
     _count: QuizCountAggregateOutputType | null
@@ -16528,6 +16535,7 @@ export namespace Prisma {
     subject_id?: boolean
     topic_name?: boolean
     title?: boolean
+    description?: boolean
     questions?: boolean
     created_at?: boolean
   }, ExtArgs["result"]["quiz"]>
@@ -16537,6 +16545,7 @@ export namespace Prisma {
     subject_id?: boolean
     topic_name?: boolean
     title?: boolean
+    description?: boolean
     questions?: boolean
     created_at?: boolean
   }, ExtArgs["result"]["quiz"]>
@@ -16546,6 +16555,7 @@ export namespace Prisma {
     subject_id?: boolean
     topic_name?: boolean
     title?: boolean
+    description?: boolean
     questions?: boolean
     created_at?: boolean
   }, ExtArgs["result"]["quiz"]>
@@ -16555,11 +16565,12 @@ export namespace Prisma {
     subject_id?: boolean
     topic_name?: boolean
     title?: boolean
+    description?: boolean
     questions?: boolean
     created_at?: boolean
   }
 
-  export type QuizOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "subject_id" | "topic_name" | "title" | "questions" | "created_at", ExtArgs["result"]["quiz"]>
+  export type QuizOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "subject_id" | "topic_name" | "title" | "description" | "questions" | "created_at", ExtArgs["result"]["quiz"]>
 
   export type $QuizPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Quiz"
@@ -16569,6 +16580,7 @@ export namespace Prisma {
       subject_id: string
       topic_name: string
       title: string
+      description: string | null
       questions: Prisma.JsonValue
       created_at: Date
     }, ExtArgs["result"]["quiz"]>
@@ -16998,6 +17010,7 @@ export namespace Prisma {
     readonly subject_id: FieldRef<"Quiz", 'String'>
     readonly topic_name: FieldRef<"Quiz", 'String'>
     readonly title: FieldRef<"Quiz", 'String'>
+    readonly description: FieldRef<"Quiz", 'String'>
     readonly questions: FieldRef<"Quiz", 'Json'>
     readonly created_at: FieldRef<"Quiz", 'DateTime'>
   }
@@ -17550,6 +17563,7 @@ export namespace Prisma {
     subject_id: 'subject_id',
     topic_name: 'topic_name',
     title: 'title',
+    description: 'description',
     questions: 'questions',
     created_at: 'created_at'
   };
@@ -18512,6 +18526,7 @@ export namespace Prisma {
     subject_id?: StringFilter<"Quiz"> | string
     topic_name?: StringFilter<"Quiz"> | string
     title?: StringFilter<"Quiz"> | string
+    description?: StringNullableFilter<"Quiz"> | string | null
     questions?: JsonFilter<"Quiz">
     created_at?: DateTimeFilter<"Quiz"> | Date | string
   }
@@ -18521,6 +18536,7 @@ export namespace Prisma {
     subject_id?: SortOrder
     topic_name?: SortOrder
     title?: SortOrder
+    description?: SortOrderInput | SortOrder
     questions?: SortOrder
     created_at?: SortOrder
   }
@@ -18533,6 +18549,7 @@ export namespace Prisma {
     subject_id?: StringFilter<"Quiz"> | string
     topic_name?: StringFilter<"Quiz"> | string
     title?: StringFilter<"Quiz"> | string
+    description?: StringNullableFilter<"Quiz"> | string | null
     questions?: JsonFilter<"Quiz">
     created_at?: DateTimeFilter<"Quiz"> | Date | string
   }, "id">
@@ -18542,6 +18559,7 @@ export namespace Prisma {
     subject_id?: SortOrder
     topic_name?: SortOrder
     title?: SortOrder
+    description?: SortOrderInput | SortOrder
     questions?: SortOrder
     created_at?: SortOrder
     _count?: QuizCountOrderByAggregateInput
@@ -18557,6 +18575,7 @@ export namespace Prisma {
     subject_id?: StringWithAggregatesFilter<"Quiz"> | string
     topic_name?: StringWithAggregatesFilter<"Quiz"> | string
     title?: StringWithAggregatesFilter<"Quiz"> | string
+    description?: StringNullableWithAggregatesFilter<"Quiz"> | string | null
     questions?: JsonWithAggregatesFilter<"Quiz">
     created_at?: DateTimeWithAggregatesFilter<"Quiz"> | Date | string
   }
@@ -19440,6 +19459,7 @@ export namespace Prisma {
     subject_id: string
     topic_name: string
     title: string
+    description?: string | null
     questions: JsonNullValueInput | InputJsonValue
     created_at?: Date | string
   }
@@ -19449,6 +19469,7 @@ export namespace Prisma {
     subject_id: string
     topic_name: string
     title: string
+    description?: string | null
     questions: JsonNullValueInput | InputJsonValue
     created_at?: Date | string
   }
@@ -19458,6 +19479,7 @@ export namespace Prisma {
     subject_id?: StringFieldUpdateOperationsInput | string
     topic_name?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     questions?: JsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19467,6 +19489,7 @@ export namespace Prisma {
     subject_id?: StringFieldUpdateOperationsInput | string
     topic_name?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     questions?: JsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19476,6 +19499,7 @@ export namespace Prisma {
     subject_id: string
     topic_name: string
     title: string
+    description?: string | null
     questions: JsonNullValueInput | InputJsonValue
     created_at?: Date | string
   }
@@ -19485,6 +19509,7 @@ export namespace Prisma {
     subject_id?: StringFieldUpdateOperationsInput | string
     topic_name?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     questions?: JsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19494,6 +19519,7 @@ export namespace Prisma {
     subject_id?: StringFieldUpdateOperationsInput | string
     topic_name?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     questions?: JsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -20240,6 +20266,7 @@ export namespace Prisma {
     subject_id?: SortOrder
     topic_name?: SortOrder
     title?: SortOrder
+    description?: SortOrder
     questions?: SortOrder
     created_at?: SortOrder
   }
@@ -20249,6 +20276,7 @@ export namespace Prisma {
     subject_id?: SortOrder
     topic_name?: SortOrder
     title?: SortOrder
+    description?: SortOrder
     created_at?: SortOrder
   }
 
@@ -20257,6 +20285,7 @@ export namespace Prisma {
     subject_id?: SortOrder
     topic_name?: SortOrder
     title?: SortOrder
+    description?: SortOrder
     created_at?: SortOrder
   }
 

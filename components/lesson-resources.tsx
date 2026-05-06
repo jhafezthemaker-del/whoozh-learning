@@ -9,6 +9,7 @@ import { AddResourceModal } from './add-resource-modal'
 import { generateQuizAction, getQuizzesAction } from '@/app/actions/learning-materials'
 import QuizSection from './quiz-section'
 import { Brain, Sparkles, Loader2, Plus, BookOpen, GraduationCap } from 'lucide-react'
+import { CreateQuizModal, QuizConfig } from './create-quiz-modal'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import { ScrollArea } from './ui/scroll-area'
@@ -70,10 +71,15 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
     fetchQuizzes()
   }, [topicTitle, subjectId])
 
-  const handleGenerateQuiz = async () => {
+  const handleGenerateQuiz = async (config?: QuizConfig) => {
     setGeneratingQuiz(true)
     try {
-      const newQuiz = await generateQuizAction(subjectId, topicTitle, subjectName)
+      const newQuiz = await generateQuizAction(
+        subjectId, 
+        topicTitle, 
+        subjectName,
+        config
+      )
       setQuizzes(prev => [newQuiz as unknown as Quiz, ...prev])
       setActiveQuizId(newQuiz.id)
       toast.success('AI Quiz generated successfully!')
@@ -342,20 +348,12 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
                   <Brain className="w-5 h-5" />
                   <span>AI Assessments</span>
                 </div>
-                <Button
-                  onClick={handleGenerateQuiz}
-                  disabled={generatingQuiz}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 border-primary/20 hover:border-primary/40 bg-primary/5 hover:bg-primary/10 text-primary transition-all"
-                >
-                  {generatingQuiz ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Plus className="w-4 h-4" />
-                  )}
-                  {generatingQuiz ? 'Generating...' : 'Create AI Quiz'}
-                </Button>
+                <CreateQuizModal 
+                  topicTitle={topicTitle}
+                  resources={resources}
+                  onGenerate={handleGenerateQuiz}
+                  generating={generatingQuiz}
+                />
               </div>
 
               <div className="space-y-6">
@@ -364,13 +362,12 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
                     <Brain className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-20" />
                     <h3 className="text-lg font-medium text-foreground">No quizzes yet</h3>
                     <p className="text-sm text-muted-foreground mb-6">Generate an AI quiz to test your knowledge.</p>
-                    <Button
-                      onClick={handleGenerateQuiz}
-                      className="gap-2"
-                    >
-                      <Sparkles className="w-4 h-4" />
-                      Generate First Quiz
-                    </Button>
+                    <CreateQuizModal 
+                      topicTitle={topicTitle}
+                      resources={resources}
+                      onGenerate={handleGenerateQuiz}
+                      generating={generatingQuiz}
+                    />
                   </div>
                 ) : (
                   <>
@@ -384,8 +381,16 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
                           }`}
                           onClick={() => setActiveQuizId(activeQuizId === q.id ? null : q.id)}
                         >
-                          <span className="font-bold">Quiz {quizzes.length - idx}</span>
-                          <span className="text-xs opacity-80 line-clamp-1">{q.title}</span>
+                          <div className="flex-1 min-w-0">
+                            <span className="font-bold block truncate">
+                              {q.title || `Quiz ${quizzes.length - idx}`}
+                            </span>
+                            {q.description && (
+                              <span className="text-[10px] opacity-70 line-clamp-1 mt-0.5 italic">
+                                {q.description}
+                              </span>
+                            )}
+                          </div>
                           {activeQuizId === q.id && (
                             <div className="absolute top-2 right-2">
                               <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
@@ -396,7 +401,7 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
                     </div>
 
                     {activeQuizId && (
-                      <div className="mt-8 bg-muted/30 rounded-2xl p-6 border border-border animate-in fade-in slide-in-from-top-4 duration-300">
+                      <div className="mt-8 bg-muted/20 rounded-3xl px-4 sm:px-8 py-10 border border-border animate-in fade-in slide-in-from-top-4 duration-500">
                         <div className="flex justify-between items-center mb-6">
                           <h3 className="text-lg font-bold">Assessment View</h3>
                           <Button 

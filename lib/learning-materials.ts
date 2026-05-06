@@ -23,6 +23,7 @@ export interface LessonMaterial {
 }
 
 export interface QuizQuestion {
+  type: 'multiple-choice' | 'true-false' | 'fill-in-the-blank'
   question: string
   options: string[]
   correctAnswer: string
@@ -33,6 +34,7 @@ export interface Quiz {
   subject_id: string
   topic_name: string
   title: string
+  description?: string
   questions: QuizQuestion[]
 }
 

@@ -140,8 +140,9 @@ export async function findAiResourceAction(query: string, topicName: string) {
 const QuizSchema = z.object({
   title: z.string(),
   questions: z.array(z.object({
+    type: z.enum(['multiple-choice', 'true-false', 'fill-in-the-blank']),
     question: z.string(),
-    options: z.array(z.string()),
+    options: z.array(z.string()), // Even for True/False and Fill-in-the-blank, we'll keep options for now to maintain compatibility, but logic can vary
     correctAnswer: z.string(),
   }))
 })
@@ -158,14 +159,52 @@ export async function getQuizzesAction(subjectId: string, topicName: string) {
   })
 }
 
-export async function generateQuizAction(subjectId: string, topicName: string, subjectName: string) {
+export async function generateQuizAction(
+  subjectId: string, 
+  topicName: string, 
+  subjectName: string,
+  config?: {
+    itemCount: number,
+    questionTypes: string[],
+    selectedResourceIds: string[],
+    title?: string,
+    description?: string
+  }
+) {
+  let contextInfo = '';
+  
+  if (config?.selectedResourceIds && config.selectedResourceIds.length > 0) {
+    const selectedResources = await prisma.learningResource.findMany({
+      where: {
+        id: { in: config.selectedResourceIds }
+      }
+    });
+    
+    contextInfo = `Base the quiz on the following resources:\n${selectedResources.map(r => `- ${r.title}: ${r.description}`).join('\n')}`;
+  }
+
+  const itemCount = config?.itemCount || 5;
+  const types = config?.questionTypes?.join(', ') || 'multiple-choice';
+
   // Generate
   const { output } = await generateText({
     model: google('gemini-3-pro-preview'),
     output: Output.object({ schema: QuizSchema }),
-    prompt: `Generate a 5-question multiple-choice quiz for the topic: "${topicName}" within the subject: "${subjectName}".
+    prompt: `Generate a ${itemCount}-question quiz for the topic: "${topicName}" within the subject: "${subjectName}".
+    ${config?.title ? `The user named this quiz: "${config.title}".` : ''}
+    ${config?.description ? `The quiz description is: "${config.description}".` : ''}
+    
+    Question Types to include: ${types}.
+    
+    ${contextInfo}
+    
+    Guidelines:
+    - For 'multiple-choice': Provide 4 distinct options.
+    - For 'true-false': Provide exactly 2 options: "True" and "False".
+    - For 'fill-in-the-blank': The question should be a sentence with a [blank]. Provide 4 options where one is the correct missing word(s), and the others are plausible but incorrect.
+    
     Ensure the questions are challenging but fair.
-    Provide 4 options for each question and clearly specify the correct answer (which must be one of the options).`
+    Specify the correct answer (which must be one of the options).`
   })
 
   // Save
@@ -173,7 +212,8 @@ export async function generateQuizAction(subjectId: string, topicName: string, s
     data: {
       subject_id: subjectId,
       topic_name: topicName,
-      title: output.title,
+      title: config?.title || output.title,
+      description: config?.description,
       questions: output.questions as any,
     }
   })

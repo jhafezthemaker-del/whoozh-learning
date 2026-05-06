@@ -181,6 +181,7 @@ model Quiz {
   subject_id  String
   topic_name  String
   title       String
+  description String?
   questions   Json     // Storing questions as JSON for simplicity
   created_at  DateTime @default(now())
 

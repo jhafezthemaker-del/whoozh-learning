@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import { Quiz, QuizQuestion } from '@/lib/learning-materials'
-import { CheckCircle2, XCircle, RefreshCcw, Trophy, ArrowRight } from 'lucide-react'
+import { CheckCircle2, XCircle, RefreshCcw, Trophy, ArrowRight, Loader2 } from 'lucide-react'
 import { Button } from './ui/button'
+import { saveQuizAttemptAction } from '@/app/actions/learning-materials'
+import { useRouter } from 'next/navigation'
 
 interface QuizSectionProps {
   quiz: Quiz
@@ -15,6 +17,9 @@ export default function QuizSection({ quiz }: QuizSectionProps) {
   const [showFeedback, setShowFeedback] = useState(false)
   const [score, setScore] = useState(0)
   const [showResults, setShowResults] = useState(false)
+  const [userAnswers, setUserAnswers] = useState<any[]>([])
+  const [isSaving, setIsSaving] = useState(false)
+  const router = useRouter()
 
   const currentQuestion = quiz.questions[currentQuestionIndex]
 
@@ -26,9 +31,15 @@ export default function QuizSection({ quiz }: QuizSectionProps) {
   const handleSubmitAnswer = () => {
     if (!selectedAnswer) return
     setShowFeedback(true)
-    if (selectedAnswer === currentQuestion.correctAnswer) {
+    const isCorrect = selectedAnswer === currentQuestion.correctAnswer
+    if (isCorrect) {
       setScore(prev => prev + 1)
     }
+    setUserAnswers(prev => [...prev, {
+      questionIndex: currentQuestionIndex,
+      selectedAnswer,
+      isCorrect
+    }])
   }
 
   const handleNextQuestion = () => {
@@ -37,7 +48,25 @@ export default function QuizSection({ quiz }: QuizSectionProps) {
       setSelectedAnswer(null)
       setShowFeedback(false)
     } else {
+      handleCompleteQuiz()
+    }
+  }
+
+  const handleCompleteQuiz = async () => {
+    setIsSaving(true)
+    try {
+      await saveQuizAttemptAction({
+        quiz_id: quiz.id,
+        score,
+        total_questions: quiz.questions.length,
+        answers: userAnswers,
+      })
       setShowResults(true)
+    } catch (error) {
+      console.error('Failed to save quiz attempt:', error)
+      setShowResults(true) // Show results anyway but maybe with a warning
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -47,6 +76,7 @@ export default function QuizSection({ quiz }: QuizSectionProps) {
     setShowFeedback(false)
     setScore(0)
     setShowResults(false)
+    setUserAnswers([])
   }
 
   if (showResults) {
@@ -66,6 +96,10 @@ export default function QuizSection({ quiz }: QuizSectionProps) {
           <Button onClick={resetQuiz} variant="outline" className="gap-2">
             <RefreshCcw className="w-4 h-4" />
             Try Again
+          </Button>
+          <Button onClick={() => router.push('/library/quizzes')} className="gap-2">
+            View All My Quizzes
+            <ArrowRight className="w-4 h-4" />
           </Button>
         </div>
       </div>
@@ -184,10 +218,20 @@ export default function QuizSection({ quiz }: QuizSectionProps) {
           ) : (
             <Button 
               onClick={handleNextQuestion}
+              disabled={isSaving}
               className="h-12 px-10 rounded-2xl bg-foreground hover:bg-foreground/90 text-background font-bold shadow-lg transition-all active:scale-95 flex items-center gap-2"
             >
-              {currentQuestionIndex < quiz.questions.length - 1 ? 'Next Question' : 'Complete Assessment'}
-              <ArrowRight className="w-5 h-5" />
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  {currentQuestionIndex < quiz.questions.length - 1 ? 'Next Question' : 'Complete Assessment'}
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              )}
             </Button>
           )}
         </div>

@@ -1,18 +1,18 @@
 'use client'
- 
+
 import { useState, useEffect } from 'react'
 import { Resource, Quiz } from '@/lib/learning-materials'
-import { FileText, Play, X, ArrowLeft, Clock, ChevronDown, ExternalLink } from 'lucide-react'
+import { FileText, Play, X, ArrowLeft, Clock, ChevronDown, ExternalLink, Brain, Sparkles, Loader2, Plus, BookOpen, GraduationCap, Trash2 } from 'lucide-react'
 import { Button } from './ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import { AddResourceModal } from './add-resource-modal'
-import { generateQuizAction, getQuizzesAction } from '@/app/actions/learning-materials'
+import { generateQuizAction, getQuizzesAction, deleteQuizAction, deleteMultipleQuizzesAction } from '@/app/actions/learning-materials'
 import QuizSection from './quiz-section'
-import { Brain, Sparkles, Loader2, Plus, BookOpen, GraduationCap } from 'lucide-react'
 import { CreateQuizModal, QuizConfig } from './create-quiz-modal'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import { ScrollArea } from './ui/scroll-area'
+import { Checkbox } from './ui/checkbox'
 
 interface LessonResourcesProps {
   resources: Resource[]
@@ -52,6 +52,7 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
   const [quizzes, setQuizzes] = useState<Quiz[]>([])
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null)
   const [generatingQuiz, setGeneratingQuiz] = useState(false)
+  const [selectedQuizIds, setSelectedQuizIds] = useState<string[]>([])
 
   // Fetch quizzes on topic change
   useEffect(() => {
@@ -60,10 +61,6 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
       try {
         const existingQuizzes = await getQuizzesAction(subjectId, topicTitle)
         setQuizzes(existingQuizzes as unknown as Quiz[])
-        // Auto-select first quiz if available and none selected
-        if (existingQuizzes.length > 0 && !activeQuizId) {
-          // setActiveQuizId(existingQuizzes[0].id) // Don't auto-select, wait for click
-        }
       } catch (error) {
         console.error('Failed to fetch quizzes', error)
       }
@@ -91,10 +88,59 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
     }
   }
 
+  const handleDeleteQuiz = async (e: React.MouseEvent, quizId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!confirm('Are you sure you want to delete this quiz and all its attempts?')) {
+      return
+    }
+
+    try {
+      await deleteQuizAction(quizId)
+      setQuizzes(prev => prev.filter(q => q.id !== quizId))
+      if (activeQuizId === quizId) {
+        setActiveQuizId(null)
+      }
+      setSelectedQuizIds(prev => prev.filter(id => id !== quizId))
+      toast.success('Quiz deleted')
+    } catch (error) {
+      console.error('Failed to delete quiz:', error)
+      toast.error('Failed to delete quiz')
+    }
+  }
+
+  const toggleQuizSelection = (quizId: string) => {
+    setSelectedQuizIds(prev => 
+      prev.includes(quizId) 
+        ? prev.filter(id => id !== quizId) 
+        : [...prev, quizId]
+    )
+  }
+
+  const handleBulkDeleteQuizzes = async () => {
+    if (selectedQuizIds.length === 0) return
+    if (!confirm(`Are you sure you want to delete ${selectedQuizIds.length} quizzes?`)) {
+      return
+    }
+
+    try {
+      await deleteMultipleQuizzesAction(selectedQuizIds)
+      setQuizzes(prev => prev.filter(q => !selectedQuizIds.includes(q.id)))
+      if (selectedQuizIds.includes(activeQuizId || '')) {
+        setActiveQuizId(null)
+      }
+      setSelectedQuizIds([])
+      toast.success(`${selectedQuizIds.length} quizzes deleted`)
+    } catch (error) {
+      console.error('Failed to delete quizzes:', error)
+      toast.error('Failed to delete quizzes')
+    }
+  }
+
   if (selectedResource) {
     return (
       <div className="w-full h-full flex flex-col bg-background">
-        {/* Header with Back Button */}
         <div className="border-b border-border p-6">
           <Button
             variant="ghost"
@@ -109,7 +155,6 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
           <p className="text-sm text-muted-foreground mt-1">{selectedResource.description}</p>
         </div>
 
-        {/* Content Area */}
         <div className="flex-1 p-6 overflow-y-auto">
           {selectedResource.type === 'video' ? (
             <div className="max-w-4xl mx-auto">
@@ -164,9 +209,6 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
                       }
                       title={selectedResource.title}
                       className="w-full h-full border-0 bg-white"
-                      onError={(e) => {
-                        (e.target as HTMLIFrameElement).style.display = 'none';
-                      }}
                     />
                   </object>
                 ) : (
@@ -190,9 +232,7 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
 
   return (
     <div className="w-full h-full flex flex-col bg-background min-h-0">
-      {/* Top Navigation Header */}
       <div className="border-b border-border px-6 py-4 space-y-4">
-        {/* Dropdown and Time Row */}
         <div className="flex items-center justify-between">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -219,7 +259,6 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
           </div>
         </div>
 
-        {/* Topic Navigation */}
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
             Prev:{TOPICS[Math.max(0, selectedTopicId - 2)]?.name || 'Topic 1'}
@@ -233,7 +272,6 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
         </div>
       </div>
 
-      {/* Header */}
       <div className="border-b border-border p-6">
         <div className="flex items-center justify-between mb-2">
           <div>
@@ -344,9 +382,22 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
           <ScrollArea className="h-full">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2 text-primary font-semibold">
-                  <Brain className="w-5 h-5" />
-                  <span>AI Assessments</span>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-primary font-semibold">
+                    <Brain className="w-5 h-5" />
+                    <span>AI Assessments</span>
+                  </div>
+                  {selectedQuizIds.length > 0 && (
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={handleBulkDeleteQuizzes}
+                      className="gap-2 animate-in fade-in slide-in-from-left-2 duration-300"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete ({selectedQuizIds.length})
+                    </Button>
+                  )}
                 </div>
                 <CreateQuizModal 
                   topicTitle={topicTitle}
@@ -362,41 +413,53 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
                     <Brain className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-20" />
                     <h3 className="text-lg font-medium text-foreground">No quizzes yet</h3>
                     <p className="text-sm text-muted-foreground mb-6">Generate an AI quiz to test your knowledge.</p>
-                    <CreateQuizModal 
-                      topicTitle={topicTitle}
-                      resources={resources}
-                      onGenerate={handleGenerateQuiz}
-                      generating={generatingQuiz}
-                    />
                   </div>
                 ) : (
                   <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {quizzes.map((q, idx) => (
-                        <Button
-                          key={q.id}
-                          variant={activeQuizId === q.id ? "default" : "outline"}
-                          className={`h-auto py-4 px-5 flex flex-col items-start gap-1 text-left relative overflow-hidden transition-all ${
-                            activeQuizId === q.id ? "ring-2 ring-primary ring-offset-2" : "hover:border-primary/50"
-                          }`}
-                          onClick={() => setActiveQuizId(activeQuizId === q.id ? null : q.id)}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <span className="font-bold block truncate">
-                              {q.title || `Quiz ${quizzes.length - idx}`}
-                            </span>
-                            {q.description && (
-                              <span className="text-[10px] opacity-70 line-clamp-1 mt-0.5 italic">
-                                {q.description}
+                        <div key={q.id} className="relative group/quiz">
+                          <Button
+                            variant={activeQuizId === q.id ? "default" : "outline"}
+                            className={`w-full h-auto py-4 px-5 flex flex-col items-start gap-1 text-left relative overflow-hidden transition-all ${
+                              activeQuizId === q.id ? "ring-2 ring-primary ring-offset-2" : "hover:border-primary/50"
+                            } ${selectedQuizIds.includes(q.id) ? 'border-primary bg-primary/5' : ''}`}
+                            onClick={() => setActiveQuizId(activeQuizId === q.id ? null : q.id)}
+                          >
+                            <div className="flex-1 min-w-0 pr-6 pl-2">
+                              <span className="font-bold block truncate">
+                                {q.title || `Quiz ${quizzes.length - idx}`}
                               </span>
-                            )}
-                          </div>
-                          {activeQuizId === q.id && (
-                            <div className="absolute top-2 right-2">
-                              <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                              {q.description && (
+                                <span className="text-[10px] opacity-70 line-clamp-1 mt-0.5 italic">
+                                  {q.description}
+                                </span>
+                              )}
                             </div>
-                          )}
-                        </Button>
+                            {activeQuizId === q.id && (
+                              <div className="absolute top-2 right-2">
+                                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                              </div>
+                            )}
+                          </Button>
+                          
+                          <div className="absolute top-2 left-2 z-20">
+                            <Checkbox 
+                              checked={selectedQuizIds.includes(q.id)}
+                              onCheckedChange={() => toggleQuizSelection(q.id)}
+                              className="w-5 h-5 border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                            />
+                          </div>
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => handleDeleteQuiz(e, q.id)}
+                            className="absolute top-1 right-1 w-7 h-7 rounded-full bg-background/80 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all z-10 border border-border/50 shadow-sm opacity-0 group-hover/quiz:opacity-100"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
                       ))}
                     </div>
 

@@ -53,6 +53,9 @@ export default function Header() {
             <Link href="/library" className="text-foreground hover:text-primary transition-colors font-medium">
               Library
             </Link>
+            <Link href="/library/quizzes" className="text-foreground hover:text-primary transition-colors font-medium">
+              Quizzes
+            </Link>
             <Link href="/learning" className="text-foreground hover:text-primary transition-colors font-medium">
               Learning
             </Link>
@@ -122,6 +125,9 @@ export default function Header() {
             </Link>
             <Link href="/library" className="text-foreground hover:text-primary transition-colors font-medium">
               Library
+            </Link>
+            <Link href="/library/quizzes" className="text-foreground hover:text-primary transition-colors font-medium">
+              Quizzes
             </Link>
             <Link href="/learning" className="text-foreground hover:text-primary transition-colors font-medium">
               Learning

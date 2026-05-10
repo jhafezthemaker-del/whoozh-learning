@@ -20,6 +20,7 @@ model User {
   sessions      Session[]
   learning      Learning[]
   roadmaps      Roadmap[]
+  quiz_attempts QuizAttempt[]
 
   @@map("users")
 }
@@ -184,7 +185,23 @@ model Quiz {
   description String?
   questions   Json     // Storing questions as JSON for simplicity
   created_at  DateTime @default(now())
+  attempts    QuizAttempt[]
 
   @@index([subject_id, topic_name])
   @@map("quizzes")
+}
+
+model QuizAttempt {
+  id              String   @id @default(uuid())
+  quiz_id         String
+  user_id         String
+  score           Int
+  total_questions Int
+  answers         Json     // Array of { questionIndex: number, selectedAnswer: string, isCorrect: boolean }
+  created_at      DateTime @default(now())
+
+  quiz Quiz @relation(fields: [quiz_id], references: [id], onDelete: Cascade)
+  user User @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("quiz_attempts")
 }

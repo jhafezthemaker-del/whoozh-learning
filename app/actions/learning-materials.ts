@@ -4,6 +4,7 @@ import { google } from '@ai-sdk/google'
 import { generateText, Output } from 'ai'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 
 const SourceSchema = z.object({
   sources: z.array(z.object({
@@ -142,8 +143,9 @@ const QuizSchema = z.object({
   questions: z.array(z.object({
     type: z.enum(['multiple-choice', 'true-false', 'fill-in-the-blank']),
     question: z.string(),
-    options: z.array(z.string()), // Even for True/False and Fill-in-the-blank, we'll keep options for now to maintain compatibility, but logic can vary
+    options: z.array(z.string()), 
     correctAnswer: z.string(),
+    explanation: z.string(),
   }))
 })
 
@@ -204,7 +206,8 @@ export async function generateQuizAction(
     - For 'fill-in-the-blank': The question should be a sentence with a [blank]. Provide 4 options where one is the correct missing word(s), and the others are plausible but incorrect.
     
     Ensure the questions are challenging but fair.
-    Specify the correct answer (which must be one of the options).`
+    Specify the correct answer (which must be one of the options).
+    For the explanation, provide a detailed but concise paragraph explaining why the correct answer is right and why the other options are incorrect. This helps the user learn from their mistakes.`
   })
 
   // Save
@@ -221,3 +224,147 @@ export async function generateQuizAction(
   return saved
 }
 
+
+export async function saveQuizAttemptAction(data: {
+  quiz_id: string;
+  score: number;
+  total_questions: number;
+  answers: any[];
+}) {
+  const session = await auth();
+  if (!session?.user?.user_id) {
+    throw new Error('Not authenticated');
+  }
+
+  const saved = await prisma.quizAttempt.create({
+    data: {
+      quiz_id: data.quiz_id,
+      user_id: session.user.user_id,
+      score: data.score,
+      total_questions: data.total_questions,
+      answers: data.answers as any,
+    }
+  });
+
+  return saved;
+}
+
+export async function getUserQuizAttemptsAction() {
+  const session = await auth();
+  if (!session?.user?.user_id) {
+    return [];
+  }
+
+  const attempts = await prisma.quizAttempt.findMany({
+    where: {
+      user_id: session.user.user_id,
+    },
+    include: {
+      quiz: true,
+    },
+    orderBy: {
+      created_at: 'desc',
+    }
+  });
+
+  return attempts;
+}
+
+export async function getQuizAttemptAction(id: string) {
+  const session = await auth();
+  if (!session?.user?.user_id) {
+    throw new Error('Not authenticated');
+  }
+
+  const attempt = await prisma.quizAttempt.findUnique({
+    where: { id },
+    include: {
+      quiz: true,
+    }
+  });
+
+  if (!attempt || attempt.user_id !== session.user.user_id) {
+    throw new Error('Attempt not found or access denied');
+  }
+
+  return attempt;
+}
+
+export async function deleteQuizAction(id: string) {
+  const session = await auth();
+  if (!session?.user?.user_id) {
+    throw new Error('Not authenticated');
+  }
+
+  // Currently, quizzes aren't strictly tied to a user_id in the Quiz model, 
+  // but they are related to attempts. For now, let's allow deletion if it exists.
+  // In a real app, you might want to check if the user is the creator or an admin.
+  await prisma.quiz.delete({
+    where: { id }
+  });
+
+  return { success: true };
+}
+
+export async function deleteQuizAttemptAction(id: string) {
+  const session = await auth();
+  if (!session?.user?.user_id) {
+    throw new Error('Not authenticated');
+  }
+
+  const attempt = await prisma.quizAttempt.findUnique({
+    where: { id }
+  });
+
+  if (!attempt || attempt.user_id !== session.user.user_id) {
+    throw new Error('Attempt not found or access denied');
+  }
+
+  await prisma.quizAttempt.delete({
+    where: { id }
+  });
+
+  return { success: true };
+}
+
+export async function deleteMultipleQuizzesAction(ids: string[]) {
+  const session = await auth();
+  if (!session?.user?.user_id) {
+    throw new Error('Not authenticated');
+  }
+
+  await prisma.quiz.deleteMany({
+    where: {
+      id: { in: ids }
+    }
+  });
+
+  return { success: true };
+}
+
+export async function deleteMultipleQuizAttemptsAction(ids: string[]) {
+  const session = await auth();
+  if (!session?.user?.user_id) {
+    throw new Error('Not authenticated');
+  }
+
+  // Check ownership for all
+  const attempts = await prisma.quizAttempt.findMany({
+    where: {
+      id: { in: ids },
+      user_id: session.user.user_id
+    }
+  });
+
+  if (attempts.length !== ids.length) {
+    throw new Error('Some attempts not found or access denied');
+  }
+
+  await prisma.quizAttempt.deleteMany({
+    where: {
+      id: { in: ids }
+    }
+  });
+
+  return { success: true };
+}

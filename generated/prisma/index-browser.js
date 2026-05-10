@@ -251,6 +251,16 @@ exports.Prisma.QuizScalarFieldEnum = {
   created_at: 'created_at'
 };
 
+exports.Prisma.QuizAttemptScalarFieldEnum = {
+  id: 'id',
+  quiz_id: 'quiz_id',
+  user_id: 'user_id',
+  score: 'score',
+  total_questions: 'total_questions',
+  answers: 'answers',
+  created_at: 'created_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -296,7 +306,8 @@ exports.Prisma.ModelName = {
   Roadmap: 'Roadmap',
   LearningSource: 'LearningSource',
   LearningResource: 'LearningResource',
-  Quiz: 'Quiz'
+  Quiz: 'Quiz',
+  QuizAttempt: 'QuizAttempt'
 };
 
 /**

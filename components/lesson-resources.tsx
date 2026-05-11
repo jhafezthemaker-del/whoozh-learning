@@ -2,17 +2,28 @@
 
 import { useState, useEffect } from 'react'
 import { Resource, Quiz } from '@/lib/learning-materials'
-import { FileText, Play, X, ArrowLeft, Clock, ChevronDown, ExternalLink, Brain, Sparkles, Loader2, Plus, BookOpen, GraduationCap, Trash2 } from 'lucide-react'
+import { FileText, Play, X, ArrowLeft, Clock, ChevronDown, ExternalLink, Brain, Sparkles, Loader2, Plus, BookOpen, GraduationCap, Trash2, AlertTriangle } from 'lucide-react'
 import { Button } from './ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import { AddResourceModal } from './add-resource-modal'
-import { generateQuizAction, getQuizzesAction, deleteQuizAction, deleteMultipleQuizzesAction } from '@/app/actions/learning-materials'
+import { generateQuizAction, getQuizzesAction, deleteMultipleQuizzesAction } from '@/app/actions/learning-materials'
 import QuizSection from './quiz-section'
 import { CreateQuizModal, QuizConfig } from './create-quiz-modal'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import { ScrollArea } from './ui/scroll-area'
 import { Checkbox } from './ui/checkbox'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog'
 
 interface LessonResourcesProps {
   resources: Resource[]
@@ -53,6 +64,7 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null)
   const [generatingQuiz, setGeneratingQuiz] = useState(false)
   const [selectedQuizIds, setSelectedQuizIds] = useState<string[]>([])
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   // Fetch quizzes on topic change
   useEffect(() => {
@@ -88,27 +100,6 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
     }
   }
 
-  const handleDeleteQuiz = async (e: React.MouseEvent, quizId: string) => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    if (!confirm('Are you sure you want to delete this quiz and all its attempts?')) {
-      return
-    }
-
-    try {
-      await deleteQuizAction(quizId)
-      setQuizzes(prev => prev.filter(q => q.id !== quizId))
-      if (activeQuizId === quizId) {
-        setActiveQuizId(null)
-      }
-      setSelectedQuizIds(prev => prev.filter(id => id !== quizId))
-      toast.success('Quiz deleted')
-    } catch (error) {
-      console.error('Failed to delete quiz:', error)
-      toast.error('Failed to delete quiz')
-    }
-  }
 
   const toggleQuizSelection = (quizId: string) => {
     setSelectedQuizIds(prev => 
@@ -120,10 +111,7 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
 
   const handleBulkDeleteQuizzes = async () => {
     if (selectedQuizIds.length === 0) return
-    if (!confirm(`Are you sure you want to delete ${selectedQuizIds.length} quizzes?`)) {
-      return
-    }
-
+    
     try {
       await deleteMultipleQuizzesAction(selectedQuizIds)
       setQuizzes(prev => prev.filter(q => !selectedQuizIds.includes(q.id)))
@@ -131,6 +119,7 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
         setActiveQuizId(null)
       }
       setSelectedQuizIds([])
+      setIsDeleteDialogOpen(false)
       toast.success(`${selectedQuizIds.length} quizzes deleted`)
     } catch (error) {
       console.error('Failed to delete quizzes:', error)
@@ -388,15 +377,41 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
                     <span>AI Assessments</span>
                   </div>
                   {selectedQuizIds.length > 0 && (
-                    <Button 
-                      variant="destructive" 
-                      size="sm" 
-                      onClick={handleBulkDeleteQuizzes}
-                      className="gap-2 animate-in fade-in slide-in-from-left-2 duration-300"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete ({selectedQuizIds.length})
-                    </Button>
+                    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          className="gap-2 animate-in fade-in slide-in-from-left-2 duration-300"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete ({selectedQuizIds.length})
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-background/95 backdrop-blur-xl border-border/50 shadow-2xl">
+                        <AlertDialogHeader>
+                          <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+                            <AlertTriangle className="w-6 h-6 text-destructive" />
+                          </div>
+                          <AlertDialogTitle className="text-xl font-bold">Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription className="text-muted-foreground pt-2">
+                            This will permanently delete <span className="font-bold text-foreground underline decoration-destructive/30 underline-offset-4">{selectedQuizIds.length}</span> {selectedQuizIds.length === 1 ? 'quiz' : 'quizzes'} and all their associated attempts. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="mt-6 gap-3">
+                          <AlertDialogCancel className="rounded-xl border-border/50 hover:bg-secondary transition-colors">Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={(e) => {
+                              e.preventDefault()
+                              handleBulkDeleteQuizzes()
+                            }}
+                            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl px-6 transition-all active:scale-95"
+                          >
+                            Delete {selectedQuizIds.length === 1 ? 'Quiz' : 'Quizzes'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   )}
                 </div>
                 <CreateQuizModal 
@@ -451,14 +466,7 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
                             />
                           </div>
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={(e) => handleDeleteQuiz(e, q.id)}
-                            className="absolute top-1 right-1 w-7 h-7 rounded-full bg-background/80 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all z-10 border border-border/50 shadow-sm opacity-0 group-hover/quiz:opacity-100"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
+
                         </div>
                       ))}
                     </div>

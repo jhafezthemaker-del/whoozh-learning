@@ -153,6 +153,27 @@ export const categories: Category[] = [
         description: 'iOS, Android, and cross-platform apps',
         courseCount: 6,
       },
+      {
+        id: 'react',
+        name: 'React',
+        icon: '⚛️',
+        description: 'Master component-based UI development with React',
+        courseCount: 15,
+      },
+      {
+        id: 'typescript',
+        name: 'TypeScript',
+        icon: '📘',
+        description: 'Learn strongly typed JavaScript for scalable applications',
+        courseCount: 10,
+      },
+      {
+        id: 'angular',
+        name: 'Angular',
+        icon: '🅰️',
+        description: 'Build enterprise-level web applications with Angular',
+        courseCount: 8,
+      },
     ],
   },
   {

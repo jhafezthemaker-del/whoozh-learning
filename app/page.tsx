@@ -29,7 +29,7 @@ export default function Home() {
                   </h1>
                 </div>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  Explore our comprehensive learning paths across mathematics, science, programming, languages, finance, and history.
+                  Explore our comprehensive learning paths across mathematics, science, programming, languages, finance, history, cybersecurity, and software architecture.
                 </p>
               </div>
 

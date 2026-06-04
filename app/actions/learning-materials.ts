@@ -33,7 +33,7 @@ export async function getOrGenerateSourcesAction(subjectId: string, subjectName:
 
   // Generate
   const { output } = await generateText({
-    model: google('gemini-3-pro-preview'),
+    model: google('gemini-3.5-flash'),
     output: Output.object({ schema: SourceSchema }),
     prompt: `Generate 3-5 high-quality learning sources for the subject: ${subjectName}. 
     Each source should have a title and a brief description. 
@@ -65,15 +65,19 @@ export async function getOrGenerateResourcesAction(topicName: string, subjectId:
 
   if (existing.length > 0) return existing
 
+  const currentYear = new Date().getFullYear()
+  const startYear = currentYear - 5
+
   // Generate
   const { output } = await generateText({
-    model: google('gemini-3-pro-preview'),
+    model: google('gemini-3.5-flash'),
     output: Output.object({ schema: ResourceSchema }),
     prompt: `Generate 4 specific learning resources for the topic: "${topicName}" within the subject: "${subjectName}".
     Include 2 videos and 2 PDF/Reading resources.
     For videos, PROVIDE VALID, REAL YOUTUBE EMBED URLS (e.g., https://www.youtube.com/embed/VIDEO_ID).
     For PDFs, provide a valid, public PDF URL (e.g., https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf). Do not provide descriptive text in the url field.
-    Ensure titles and descriptions are professional.`
+    Ensure titles and descriptions are professional.
+    Only generate resources that were published or updated between ${startYear} and ${currentYear} (i.e., within the last 5 years).`
   })
 
   // Save
@@ -124,15 +128,19 @@ const SingleResourceSchema = z.object({
 });
 
 export async function findAiResourceAction(query: string, topicName: string) {
+  const currentYear = new Date().getFullYear()
+  const startYear = currentYear - 5
+
   const { output } = await generateText({
-    model: google('gemini-3-pro-preview'),
+    model: google('gemini-3.5-flash'),
     output: Output.object({ schema: ResourceSchema }),
     prompt: `Find 3 high-quality learning resources based on the user's request: "${query}".
     This is for the topic: "${topicName}".
     Include a mix of videos and PDF/Reading resources.
     For videos, PROVIDE VALID, REAL YOUTUBE EMBED URLS (e.g., https://www.youtube.com/embed/VIDEO_ID).
     For PDFs, provide a valid, public PDF URL (e.g., https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf).
-    Ensure titles and descriptions are professional.`
+    Ensure titles and descriptions are professional.
+    Only select/recommend resources that were published or updated between ${startYear} and ${currentYear} (i.e., within the last 5 years).`
   })
 
   return output.resources;
@@ -190,7 +198,7 @@ export async function generateQuizAction(
 
   // Generate
   const { output } = await generateText({
-    model: google('gemini-3-pro-preview'),
+    model: google('gemini-3.5-flash'),
     output: Output.object({ schema: QuizSchema }),
     prompt: `Generate a ${itemCount}-question quiz for the topic: "${topicName}" within the subject: "${subjectName}".
     ${config?.title ? `The user named this quiz: "${config.title}".` : ''}

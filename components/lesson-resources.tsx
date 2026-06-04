@@ -46,6 +46,21 @@ const getFormattedTime = () => {
   return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
 }
 
+const getEmbedUrl = (url: string) => {
+  if (!url) return url;
+  try {
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))([^&?\/]{11})/i);
+      if (match && match[1]) {
+        return `https://www.youtube-nocookie.com/embed/${match[1]}`;
+      }
+    }
+  } catch (e) {
+    // Ignore error, fallback to original url
+  }
+  return url;
+}
+
 const isValidUrl = (urlString: string) => {
   if (!urlString) return false
   if (urlString.startsWith('/') || urlString.startsWith('./')) return true
@@ -151,9 +166,10 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
                 <iframe
                   width="100%"
                   height="100%"
-                  src={selectedResource.url}
+                  src={getEmbedUrl(selectedResource.url)}
                   title={selectedResource.title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
                   allowFullScreen
                   className="w-full h-full"
                 />

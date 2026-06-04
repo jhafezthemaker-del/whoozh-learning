@@ -38,7 +38,7 @@ export async function generateRoadmapAction(subjectName: string) {
 
   try {
     const { output } = await generateText({
-      model: google('gemini-3-pro-preview'),
+      model: google('gemini-3.5-flash'),
       output: Output.object({ schema: RoadmapSchema }),
       prompt: `Create a 4-week learning roadmap for the subject: ${subjectName}.
       The roadmap should start from today, which is ${dateString}.

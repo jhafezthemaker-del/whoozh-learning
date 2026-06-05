@@ -24,6 +24,17 @@ interface QuizHistoryListProps {
   initialAttempts: any[]
 }
 
+const getSubjectInfo = (subjectId: string) => {
+  const category = categories.find(c => c.id === subjectId)
+  if (category) return category
+
+  for (const cat of categories) {
+    const subtopic = cat.topics.find(t => t.id === subjectId)
+    if (subtopic) return subtopic
+  }
+  return { name: subjectId, icon: '📚', description: `Explore your quiz history for ${subjectId}.` }
+}
+
 export default function QuizHistoryList({ initialAttempts }: QuizHistoryListProps) {
   const router = useRouter()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -32,14 +43,14 @@ export default function QuizHistoryList({ initialAttempts }: QuizHistoryListProp
   const [activeSubjectId, setActiveSubjectId] = useState<string | null>(null)
 
   const toggleSelection = (id: string) => {
-    setSelectedIds(prev => 
+    setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     )
   }
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return
-    
+
     setIsDeleting(true)
     try {
       await deleteMultipleQuizAttemptsAction(selectedIds)
@@ -65,32 +76,40 @@ export default function QuizHistoryList({ initialAttempts }: QuizHistoryListProp
     return acc
   }, {} as Record<string, any[]>)
 
-  // Sort subject IDs based on their order in categories
+  // Sort subject IDs based on their order in categories/subtopics
   const sortedSubjectIds = Object.keys(groupedAttempts).sort((a, b) => {
-    const indexA = categories.findIndex(c => c.id === a)
-    const indexB = categories.findIndex(c => c.id === b)
-    return indexA - indexB
+    const getIndex = (id: string) => {
+      const catIndex = categories.findIndex(c => c.id === id)
+      if (catIndex !== -1) return catIndex * 100
+
+      for (let i = 0; i < categories.length; i++) {
+        const subIndex = categories[i].topics.findIndex(t => t.id === id)
+        if (subIndex !== -1) return i * 100 + subIndex + 1
+      }
+      return 9999
+    }
+    return getIndex(a) - getIndex(b)
   })
 
-  const activeSubject = activeSubjectId ? categories.find(c => c.id === activeSubjectId) : null
+  const activeSubject = activeSubjectId ? getSubjectInfo(activeSubjectId) : null
   const activeAttempts = activeSubjectId ? groupedAttempts[activeSubjectId] : []
 
   if (!activeSubjectId) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {sortedSubjectIds.map((subjectId) => {
-          const subject = categories.find(c => c.id === subjectId)
+          const subject = getSubjectInfo(subjectId)
           const attempts = groupedAttempts[subjectId]
-          
+
           return (
-            <div 
-              key={subjectId} 
+            <div
+              key={subjectId}
               onClick={() => setActiveSubjectId(subjectId)}
               className="cursor-pointer group"
             >
               <div className="bg-card border border-border rounded-2xl p-6 h-full hover:shadow-xl hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300 relative overflow-hidden flex flex-col">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -z-10 group-hover:scale-110 transition-transform duration-500" />
-                
+
                 <div className="flex items-start justify-between mb-4">
                   <div className="text-4xl drop-shadow-sm group-hover:scale-110 transition-transform duration-300 transform origin-bottom-left">
                     {subject?.icon || '📚'}
@@ -103,7 +122,7 @@ export default function QuizHistoryList({ initialAttempts }: QuizHistoryListProp
                 <h3 className="font-bold text-foreground text-xl mb-2 line-clamp-1 group-hover:text-primary transition-colors">
                   {subject?.name || subjectId}
                 </h3>
-                
+
                 <p className="text-sm text-muted-foreground mb-6 line-clamp-2 flex-grow">
                   {subject?.description || `Explore your quiz history for ${subjectId}.`}
                 </p>
@@ -151,7 +170,7 @@ export default function QuizHistoryList({ initialAttempts }: QuizHistoryListProp
             )}
             {selectedIds.length === activeAttempts.length && activeAttempts.length > 0 ? 'Deselect All' : 'Select All'}
           </Button>
-          
+
           {selectedIds.length > 0 && (
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
               <AlertDialogTrigger asChild>
@@ -181,7 +200,7 @@ export default function QuizHistoryList({ initialAttempts }: QuizHistoryListProp
                 </AlertDialogHeader>
                 <AlertDialogFooter className="mt-6 gap-3">
                   <AlertDialogCancel className="rounded-xl border-border/50 hover:bg-secondary transition-colors">Cancel</AlertDialogCancel>
-                  <AlertDialogAction 
+                  <AlertDialogAction
                     onClick={(e) => {
                       e.preventDefault()
                       handleBulkDelete()
@@ -196,7 +215,7 @@ export default function QuizHistoryList({ initialAttempts }: QuizHistoryListProp
             </AlertDialog>
           )}
         </div>
-        
+
         <div className="flex items-center gap-2">
           <div className="text-2xl">{activeSubject?.icon}</div>
           <div className="text-sm font-bold text-foreground">{activeSubject?.name}</div>
@@ -208,9 +227,9 @@ export default function QuizHistoryList({ initialAttempts }: QuizHistoryListProp
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {activeAttempts.map((attempt: any) => (
-          <QuizAttemptCard 
-            key={attempt.id} 
-            attempt={attempt} 
+          <QuizAttemptCard
+            key={attempt.id}
+            attempt={attempt}
             isSelected={selectedIds.includes(attempt.id)}
             onToggleSelection={toggleSelection}
           />

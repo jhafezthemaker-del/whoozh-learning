@@ -34,12 +34,12 @@ export default function TopicPage() {
       setIsLoadingRoadmap(false)
     }
     loadRoadmap()
-  }, [topicId])
+  }, [subtopicId])
 
   const handleGenerateRoadmap = async () => {
-    if (!topic) return
+    if (!subtopic) return
     setIsGenerating(true)
-    const result = await generateRoadmapAction(topic.name)
+    const result = await generateRoadmapAction(subtopic.name)
     setIsGenerating(false)
 
     if (result.success && result.roadmap) {
@@ -118,7 +118,7 @@ export default function TopicPage() {
             <div className="mb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <RoadmapEditor 
                 initialData={roadmap} 
-                subjectId={topicId} 
+                subjectId={subtopicId} 
                 onSave={() => {}} 
               />
             </div>

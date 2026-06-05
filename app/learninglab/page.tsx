@@ -44,7 +44,19 @@ export default async function LearningAreaPage({
   const roadmapData = roadmapRecord.data as any
 
   // Get subject name from categories lib
-  const subjectName = categories.find(c => c.id === subjectId)?.name || subjectId
+  let subjectName = subjectId
+  const category = categories.find(c => c.id === subjectId)
+  if (category) {
+    subjectName = category.name
+  } else {
+    for (const cat of categories) {
+      const subtopic = cat.topics.find(t => t.id === subjectId)
+      if (subtopic) {
+        subjectName = subtopic.name
+        break
+      }
+    }
+  }
 
   // Extract the current topic (first session of first day of first week by default)
   const firstWeek = roadmapData?.weeks?.[0]

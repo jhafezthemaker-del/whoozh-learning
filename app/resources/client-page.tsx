@@ -26,20 +26,37 @@ export default function ResourcesClientPage({ initialResources }: { initialResou
   // Derived state
   const availableSubjects = useMemo(() => {
     const subjectIds = Array.from(new Set(initialResources.map(r => r.subject_id)))
-    return categories.filter(c => subjectIds.includes(c.id))
+    return categories.filter(c => 
+      subjectIds.includes(c.id) || 
+      c.topics.some(t => subjectIds.includes(t.id))
+    )
   }, [initialResources])
 
   const availableTopics = useMemo(() => {
     let resourcesToConsider = initialResources
     if (selectedSubject !== 'all') {
-      resourcesToConsider = resourcesToConsider.filter(r => r.subject_id === selectedSubject)
+      resourcesToConsider = resourcesToConsider.filter(r => {
+        if (r.subject_id === selectedSubject) return true
+        const category = categories.find(c => c.id === selectedSubject)
+        return category ? category.topics.some(t => t.id === r.subject_id) : false
+      })
     }
     return Array.from(new Set(resourcesToConsider.map(r => r.topic_name)))
   }, [initialResources, selectedSubject])
 
   const filteredResources = useMemo(() => {
     return initialResources.filter(r => {
-      const matchSubject = selectedSubject === 'all' || r.subject_id === selectedSubject
+      let matchSubject = selectedSubject === 'all'
+      if (!matchSubject) {
+        if (r.subject_id === selectedSubject) {
+          matchSubject = true
+        } else {
+          const category = categories.find(c => c.id === selectedSubject)
+          if (category && category.topics.some(t => t.id === r.subject_id)) {
+            matchSubject = true
+          }
+        }
+      }
       const matchTopic = selectedTopic === 'all' || r.topic_name === selectedTopic
       return matchSubject && matchTopic
     })
@@ -52,11 +69,23 @@ export default function ResourcesClientPage({ initialResources }: { initialResou
   }
 
   const getSubjectColor = (subjectId: string) => {
-    return categories.find(c => c.id === subjectId)?.color || 'from-gray-500 to-slate-500'
+    const category = categories.find(c => c.id === subjectId)
+    if (category) return category.color
+    for (const cat of categories) {
+      const subtopic = cat.topics.find(t => t.id === subjectId)
+      if (subtopic) return cat.color
+    }
+    return 'from-gray-500 to-slate-500'
   }
 
   const getSubjectName = (subjectId: string) => {
-    return categories.find(c => c.id === subjectId)?.name || subjectId
+    const category = categories.find(c => c.id === subjectId)
+    if (category) return category.name
+    for (const cat of categories) {
+      const subtopic = cat.topics.find(t => t.id === subjectId)
+      if (subtopic) return `${cat.name} (${subtopic.name})`
+    }
+    return subjectId
   }
 
   return (

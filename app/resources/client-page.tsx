@@ -19,6 +19,20 @@ type LearningResource = {
   created_at: Date
 }
 
+/** Prevent javascript:/data:/vbscript: URLs from reaching the DOM. */
+function sanitizeUrl(url: string): string {
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+      return url
+    }
+  } catch {
+    // relative or unparseable URL — allow it through as-is
+    return url
+  }
+  return '#'
+}
+
 export default function ResourcesClientPage({ initialResources }: { initialResources: LearningResource[] }) {
   const [selectedSubject, setSelectedSubject] = useState<string>('all')
   const [selectedTopic, setSelectedTopic] = useState<string>('all')
@@ -186,7 +200,7 @@ export default function ResourcesClientPage({ initialResources }: { initialResou
               </CardContent>
               <CardFooter className="pt-0 border-t border-border/50 bg-secondary/10 mt-auto px-6 py-4">
                 <a 
-                  href={resource.url} 
+                  href={sanitizeUrl(resource.url)}
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-full"

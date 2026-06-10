@@ -20,17 +20,23 @@ type LearningResource = {
 }
 
 /** Prevent javascript:/data:/vbscript: URLs from reaching the DOM. */
+const DANGEROUS_PROTOCOLS = /^[\s\u200B-\u200D\uFEFF]*(?:javascript|data|vbscript)\s*:/i
+
 function sanitizeUrl(url: string): string {
+  // Block dangerous schemes before any parsing (catches bare "javascript:..." strings)
+  if (DANGEROUS_PROTOCOLS.test(url)) return '#'
+
   try {
     const parsed = new URL(url)
     if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
       return url
     }
+    // Any other absolute scheme (ftp:, blob:, etc.) is also blocked
+    return '#'
   } catch {
-    // relative or unparseable URL — allow it through as-is
+    // Relative URL (e.g. "/path", "./file") — safe to allow through
     return url
   }
-  return '#'
 }
 
 export default function ResourcesClientPage({ initialResources }: { initialResources: LearningResource[] }) {

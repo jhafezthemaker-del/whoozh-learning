@@ -1,5 +1,7 @@
 const { Client } = require('pg');
-const client = new Client({ connectionString: 'postgresql://postgres:Hannah@143@localhost:5432/learning' });
+const client = new Client({ 
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/learning'
+});
 
 client.connect()
   .then(() => client.query("SELECT * FROM learning_resources WHERE type = 'video'"))

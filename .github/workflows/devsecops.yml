@@ -40,7 +40,7 @@ jobs:
       - name: Run Semgrep
         run: |
           pip install semgrep
-          semgrep ci --text --verbose || true
+          semgrep ci --config=p/default --text --verbose || true
       
 
   # -------------------------------------------------------------

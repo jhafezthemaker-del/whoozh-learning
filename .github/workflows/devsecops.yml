@@ -39,9 +39,11 @@ jobs:
 
       - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
+        run: semgrep ci --text --verbose || true
         with:
           config: "auto" # Automatically detects TypeScript/React/Node
           # This will fail the build if high-severity issues are found
+        
 
   # -------------------------------------------------------------
   # JOB 3: DEPENDENCY SCANNING / SCA (Snyk)

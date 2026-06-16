@@ -101,7 +101,10 @@
   "overrides": {
     "postcss": "^8.5.10",
     "@ai-sdk/provider-utils": "^4.0.29",
-   "picomatch": "^4.0.4"
+   "picomatch": "^4.0.4",
+    "**": {
+      "picomatch": "^4.0.4"
+    }
   }
  
 }

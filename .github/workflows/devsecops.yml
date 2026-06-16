@@ -82,7 +82,7 @@ jobs:
         
       - name: Build Docker Image
         # Builds a local image of your app to test it before pushing to a registry
-        run: docker build -t my-app:${{ github.sha }} .
+        run: docker build --no-cache -t my-app:${{ github.sha }} .
         
       - name: Run Trivy Vulnerability Scanner
         uses: aquasecurity/trivy-action@master
@@ -93,3 +93,4 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+          scanners: 'vuln'

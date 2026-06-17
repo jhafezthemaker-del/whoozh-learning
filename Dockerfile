@@ -12,5 +12,5 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 # Copy the rest of your application source code
 COPY . .
-RUN npm run build
-CMD ["npm", "start"]
+#RUN npm run build
+#CMD ["npm", "start"]

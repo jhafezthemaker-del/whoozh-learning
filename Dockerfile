@@ -8,6 +8,7 @@ RUN npm ci
 FROM node:22-alpine AS runner
 WORKDIR /app
 
+RUN apk update && apk upgrade --no-cache && npm install -g npm@latest
 # Copy the clean node_modules from the deps stage
 COPY --from=deps /app/node_modules ./node_modules
 # Copy the rest of your application source code

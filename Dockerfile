@@ -1,11 +1,30 @@
+# --- Stage 1: Install ALL Dependencies ---
 FROM node:22-alpine AS deps
 WORKDIR /app
+RUN apk update && apk upgrade --no-cache 
+COPY package.json package-lock.json ./
+# Install everything (including devDependencies so we can build)
+RUN npm ci
 
-# 1. Update the global npm tool to clear the Trivy vulnerability
-RUN npm install -g npm@latest
+# --- Stage 2: Build the Application ---
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+# Next.js now has TypeScript & Tailwind available to successfully build
+RUN npm run build
 
-# 2. Copy your project's lockfiles
+# --- Stage 3: Production Runner (Ultra Slim) ---
+FROM node:22-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Bring over the compiled build artifacts
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
 COPY package.json package-lock.json ./
 
-# 3. Use your preferred 'npm ci' for a fast, secure project build
-RUN apk update && apk upgrade --no-cache && npm ci
+# Install ONLY production dependencies in the final clean image
+RUN npm install -g npm@latest && npm ci --omit=dev
+
+CMD ["npm", "start"]

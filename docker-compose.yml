@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    # This maps your local folder to the container's app folder
+    volumes:
+      - .:/app
+      # This prevents your local node_modules from overwriting the container's node_modules
+      - /app/node_modules

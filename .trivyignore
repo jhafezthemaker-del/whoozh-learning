@@ -1,3 +1,0 @@
-# picomatch is resolved to 4.0.4 via npm overrides
-# Trivy misreads dependency range "^4.0.3" as installed version
-CVE-2026-33671

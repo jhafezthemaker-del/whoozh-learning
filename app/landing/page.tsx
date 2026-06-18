@@ -2,25 +2,19 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { useEffect, useState } from 'react'
-import { getSession } from '@/lib/auth'
+import { useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Session } from 'next-auth'
 
 export default function LandingPage() {
-  const [session, setSession] = useState<Session | null>(null)
+  const { data: session, status } = useSession()
   const router = useRouter()
 
   useEffect(() => {
-    const loadSession = async () => {
-      const currentSession = await getSession()
-      setSession(currentSession)
-      if (currentSession) {
-        router.push('/')
-      }
+    if (status === 'authenticated' && session) {
+      router.push('/')
     }
-    loadSession()
-  }, [router])
+  }, [session, status, router])
 
   return (
     <div className="min-h-screen bg-background">

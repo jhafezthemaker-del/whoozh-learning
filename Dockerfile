@@ -2,10 +2,11 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 RUN apk update && apk upgrade --no-cache 
+RUN npm install -g npm@latest
 COPY package.json package-lock.json ./
 # Install everything (including devDependencies so we can build)
 RUN npm ci
-RUN npm ls picomatch
+
 # --- Stage 2: Build the Application ---
 FROM node:22-alpine AS builder
 WORKDIR /app
@@ -27,5 +28,5 @@ COPY package.json package-lock.json ./
 # Install ONLY production dependencies in the final clean image
 EXPOSE 3000
 ENV PORT=3000
-
+RUN npm ci --omit=dev
 CMD ["npm", "start"]

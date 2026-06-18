@@ -4,5 +4,5 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 # Install everything (including devDependencies so we can build)
-RUN apk update && apk upgrade --no-cache && npm install -g npm@latest
+RUN apk update && apk upgrade --no-cache && npm ci
 

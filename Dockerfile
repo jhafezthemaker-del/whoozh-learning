@@ -2,7 +2,6 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 RUN apk update && apk upgrade --no-cache 
-RUN npm install -g npm@latest
 COPY package.json package-lock.json ./
 # Install everything (including devDependencies so we can build)
 RUN npm ci
@@ -26,7 +25,7 @@ COPY --from=builder /app/.next ./.next
 COPY package.json package-lock.json ./
 
 # Install ONLY production dependencies in the final clean image
+RUN npm install -g npm@latest && npm ci --omit=dev
 EXPOSE 3000
 ENV PORT=3000
-RUN npm ci --omit=dev
 CMD ["npm", "start"]

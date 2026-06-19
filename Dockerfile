@@ -25,7 +25,7 @@ COPY --from=builder /app/.next ./.next
 COPY package.json package-lock.json ./
 
 # Install ONLY production dependencies in the final clean image
-RUN npm install -g npm@11.6.0 && npm ci --omit=dev
+RUN npm install -g npm@latest && npm ci --omit=dev
 EXPOSE 3000
 ENV PORT=3000
 CMD ["npm", "start"]

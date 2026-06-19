@@ -9,3 +9,4 @@ services:
       - .:/app
       # This prevents your local node_modules from overwriting the container's node_modules
       - /app/node_modules
+    tty: true

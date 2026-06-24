@@ -30,4 +30,6 @@ RUN npm ci
 RUN npm -v
 EXPOSE 3000
 ENV PORT=3000
+RUN groupadd -r appgroup && useradd -r -g appgroup -m -s /bin/bash appuser
+USER appuser
 CMD ["npm", "start"]

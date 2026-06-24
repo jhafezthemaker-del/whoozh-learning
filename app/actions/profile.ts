@@ -21,14 +21,18 @@ export async function updateProfileAction(formData: FormData) {
 
     if (file && file.size > 0) {
       const buffer = Buffer.from(await file.arrayBuffer())
-      const fileExtension = path.extname(file.name)
+      const fileExtension = path.extname(path.basename(file.name))
       const filename = `${session.user.user_id}-${Date.now()}${fileExtension}`
-      const uploadDir = path.join(process.cwd(), 'public', 'uploads')
+      const uploadDir = path.resolve(process.cwd(), 'public', 'uploads')
       
       // Ensure directory exists
       await fs.mkdir(uploadDir, { recursive: true })
       
-      const filePath = path.join(uploadDir, filename)
+      const filePath = path.resolve(uploadDir, filename)
+      if (!filePath.startsWith(uploadDir)) {
+        return { success: false, message: 'Invalid file path' }
+      }
+
       await fs.writeFile(filePath, buffer)
       imageUrl = `/uploads/${filename}`
     }

@@ -21,8 +21,20 @@ export async function updateProfileAction(formData: FormData) {
 
     if (file && file.size > 0) {
       const buffer = Buffer.from(await file.arrayBuffer())
-      const fileExtension = path.extname(path.basename(file.name))
-      const filename = `${session.user.user_id}-${Date.now()}${fileExtension}`
+      const rawExt = path.extname(file.name).toLowerCase()
+      let fileExtension = '.png'
+      if (rawExt === '.jpg' || rawExt === '.jpeg') {
+        fileExtension = '.jpg'
+      } else if (rawExt === '.png') {
+        fileExtension = '.png'
+      } else if (rawExt === '.gif') {
+        fileExtension = '.gif'
+      } else if (rawExt === '.webp') {
+        fileExtension = '.webp'
+      }
+
+      const sanitizedUserId = session.user.user_id.replace(/[^a-zA-Z0-9-]/g, '')
+      const filename = `${sanitizedUserId}-${Date.now()}${fileExtension}`
       const uploadDir = path.resolve(process.cwd(), 'public', 'uploads')
       
       // Ensure directory exists

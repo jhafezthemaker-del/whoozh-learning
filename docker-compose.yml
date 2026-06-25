@@ -1,9 +1,11 @@
-version: '3.8'
 services:
   web:
     build: .
     ports:
       - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:Hannah@143@host.docker.internal:5432/learning
+      - AUTH_TRUST_HOST=true
     # This maps your local folder to the container's app folder
     volumes:
       - .:/app

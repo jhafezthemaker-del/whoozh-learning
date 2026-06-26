@@ -1,5 +1,5 @@
 # --- Stage 1: Install ALL Dependencies ---
-FROM node:24-alpine AS deps
+FROM node:26-alpine AS deps
 WORKDIR /app
 RUN apk update && apk upgrade --no-cache 
 COPY package.json package-lock.json ./
@@ -8,7 +8,7 @@ RUN npm install -g npm@11.17.0
 RUN npm ci
 
 # --- Stage 2: Build the Application ---
-FROM node:24-alpine AS builder
+FROM node:26-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 
 # --- Stage 3: Production Runner (Ultra Slim) ---
-FROM node:24-alpine AS runner
+FROM node:26-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 

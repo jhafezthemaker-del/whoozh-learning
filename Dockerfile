@@ -28,6 +28,7 @@ COPY package.json package-lock.json ./
 # Install ONLY production dependencies in the final clean image
 RUN npm ci
 RUN npm -v
+RUN node -v
 EXPOSE 3000
 ENV PORT=3000
 # Alpine uses 'addgroup' and 'adduser' instead of 'groupadd' and 'useradd'

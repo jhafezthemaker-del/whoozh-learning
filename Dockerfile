@@ -29,7 +29,6 @@ COPY package.json package-lock.json ./
 RUN npm ci
 RUN npm -v
 RUN node -v
-RUN npm ls undici
 EXPOSE 3000
 ENV PORT=3000
 # Alpine uses 'addgroup' and 'adduser' instead of 'groupadd' and 'useradd'

@@ -6,7 +6,7 @@ COPY package.json package-lock.json ./
 # Install everything (including devDependencies so we can build)
 #RUN npm install -g npm@11.17.0 && npm ci --omit=dev
 RUN npm ci
-
+RUN npm ls undici
 # --- Stage 2: Build the Application ---
 FROM node:24-alpine AS builder
 WORKDIR /app

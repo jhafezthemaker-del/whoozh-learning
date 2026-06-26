@@ -1,0 +1,2 @@
+# Ignore global npm undici vulnerability
+#CVE-2026-12151

@@ -4,7 +4,9 @@ WORKDIR /app
 RUN apk update && apk upgrade --no-cache 
 COPY package.json package-lock.json ./
 # Install everything (including devDependencies so we can build)
+
 RUN npm install -g npm@11.17.0 
+RUN cd /usr/local/lib/node_modules/npm && npm install undici@6.27.0
 RUN npm ci
 
 # --- Stage 2: Build the Application ---

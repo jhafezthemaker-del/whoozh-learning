@@ -6,7 +6,7 @@ COPY package.json package-lock.json ./
 # Install everything (including devDependencies so we can build)
 
 RUN npm install -g npm@11.17.0 
-RUN npm install --prefix /usr/local/lib/node_modules/npm undici@6.27.0 --omit=dev --ignore-scripts --legacy-peer-deps
+#RUN npm install --prefix /usr/local/lib/node_modules/npm undici@6.27.0 --omit=dev --ignore-scripts --legacy-peer-deps
 RUN npm ci
 
 # --- Stage 2: Build the Application ---

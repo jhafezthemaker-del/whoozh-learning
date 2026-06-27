@@ -22,22 +22,24 @@ const nextConfig = {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
+          // 1. Fully defined CSP to stop the "Failure to Define Directive" warnings
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';",
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';",
           },
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
           },
-          // Fixes the Cross-Origin-Embedder-Policy warning
+          // 2. Fixes the Cross-Origin-Resource-Policy warning
           {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'require-corp', 
-          },
-          {
-            key: 'Cross-Origin-Opener-Policy',
+            key: 'Cross-Origin-Resource-Policy',
             value: 'same-origin',
+          },
+          // 3. Fixes Non-Storable Content rules for standard pages
+          {
+            key: 'Cache-Control',
+            value: 'no-store, max-age=0, must-revalidate',
           }
         ],
       },

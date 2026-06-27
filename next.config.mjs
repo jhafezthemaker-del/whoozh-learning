@@ -7,10 +7,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // 1. Hide the Next.js signature from headers
   poweredByHeader: false,
 
-  // 2. Add security headers to all routes
   async headers() {
     return [
       {
@@ -31,6 +29,15 @@ const nextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
+          },
+          // Fixes the Cross-Origin-Embedder-Policy warning
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'require-corp', 
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
           }
         ],
       },

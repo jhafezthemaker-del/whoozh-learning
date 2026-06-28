@@ -36,7 +36,11 @@ const nextConfig = {
             key: 'Cross-Origin-Resource-Policy',
             value: 'same-origin',
           },
-         
+          // 3. Fixes Non-Storable Content rules for standard pages
+          {
+            key: 'Cache-Control',
+            value: 'no-store, max-age=0, must-revalidate',
+          }
         ],
       },
     ];

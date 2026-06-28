@@ -1,6 +1,6 @@
-10019           IGNORE
-10049           IGNORE
-10055           IGNORE
-10109           IGNORE
-90004           IGNORE
-90022           IGNORE
+10019	IGNORE	Content-Type Header Missing
+10049	IGNORE	Non-Storable Content
+10055	IGNORE	CSP Missing
+10109	IGNORE	Modern Web App
+90004	IGNORE	COEP Missing
+90022	IGNORE	Application Error Disclosure

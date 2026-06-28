@@ -20,7 +20,7 @@ const nextConfig = {
           },
           {
             key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            value: 'nosniff', 
           },
           // 1. Fully defined CSP to stop the "Failure to Define Directive" warnings
           {

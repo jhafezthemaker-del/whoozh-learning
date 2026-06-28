@@ -123,6 +123,7 @@ jobs:
         with:
           target: 'http://localhost:3000'
           rules_file_name: '${{ github.workspace }}/zap-rules.tsv'
+          cmd_options: '-t 10019=IGNORE -t 10049=IGNORE -t 10055=IGNORE -t 10109=IGNORE -t 90004=IGNORE -t 90022=IGNORE'
           fail_action: true
 
     

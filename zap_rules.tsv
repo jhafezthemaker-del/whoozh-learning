@@ -1,0 +1,6 @@
+10019	IGNORE	(Content-Type Header Missing)
+10049	IGNORE	(Non-Storable Content)
+10055	IGNORE	(CSP: Failure to Define Directive with No Fallback)
+10109	IGNORE	(Modern Web Application)
+90004	IGNORE	(Cross-Origin-Embedder-Policy Header Missing or Invalid)
+90022	IGNORE	(Application Error Disclosure)

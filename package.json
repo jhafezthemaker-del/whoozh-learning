@@ -13,7 +13,7 @@
     "test:vitest:watch": "vitest"
   },
   "dependencies": {
-    "@ai-sdk/google": "^3.0.82",
+    "@ai-sdk/google": "^3.0.86",
     "@ai-sdk/provider-utils": "^4.0.29",
     "@auth/prisma-adapter": "^2.11.1",
     "@hookform/resolvers": "^3.9.1",
@@ -47,7 +47,7 @@
     "@radix-ui/react-toggle-group": "1.1.11",
     "@radix-ui/react-tooltip": "1.2.8",
     "@vercel/analytics": "1.6.1",
-    "ai": "^6.0.203",
+    "ai": "^6.0.214",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

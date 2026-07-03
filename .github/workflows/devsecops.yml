@@ -68,7 +68,7 @@ jobs:
         run: npm ci
         
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@master
+        uses: snyk/actions/node@6d07e600ab80a82329388147d3d3fbbe87fcbf44 # Pin to secure version
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
@@ -91,7 +91,7 @@ jobs:
         run: docker build --no-cache -t my-app:${{ github.sha }} .
         
       - name: Run Trivy Vulnerability Scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@851abc19586fe38202315fa7a1a017fe4528aa7f
         with:
           image-ref: 'my-app:${{ github.sha }}'
           format: 'json'
@@ -125,7 +125,7 @@ jobs:
           sleep 30
 
       - name: OWASP ZAP Scan
-        uses: zaproxy/action-baseline@v0.14.0
+        uses: zaproxy/action-baseline@90d297ec6b64d3065961a86db90e290f9366df04 # v0.14.0
         with:
           target: 'http://localhost:3000'
           rules_file_name: 'zap-rules.tsv'

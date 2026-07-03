@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0 # Needs full history to find hidden secrets
       
       - name: Run TruffleHog
-        uses: trufflesecurity/trufflehog@a4a90400b21844b207dfecbc0ef4129528659132 
+        uses: trufflesecurity/trufflehog@00155c9dc586f34d189adc83d3ac2698c2ec551f
         with:
           path: ./
           extra_args: --debug --only-verified

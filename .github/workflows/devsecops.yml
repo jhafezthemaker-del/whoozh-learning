@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       
       - name: Setup Node.js
-        uses: actions/setup-node@1d43b558a28a475868693a55813060bb2c975b0d # v4.2.0
+        uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6
         with:
           node-version: '26' # Matches your NestJS/Next.js environment
           

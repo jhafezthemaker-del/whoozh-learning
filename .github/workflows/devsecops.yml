@@ -91,7 +91,7 @@ jobs:
         run: docker build --no-cache -t my-app:${{ github.sha }} .
         
       - name: Run Trivy Vulnerability Scanner
-        uses: aquasecurity/trivy-action@18f259c25ff7491f005d216058311aa0812afc35
+        uses: aquasecurity/trivy-action@69da7331bb11f5f18e237aad3950aef52224ebf9
         with:
           image-ref: 'my-app:${{ github.sha }}'
           format: 'json'

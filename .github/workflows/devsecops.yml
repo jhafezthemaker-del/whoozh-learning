@@ -111,7 +111,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
-      - uses: actions/setup-node@cde0daabccaf2dbca2982c28f1cd2d8e5721b6d6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: 26
 
@@ -125,7 +125,7 @@ jobs:
           sleep 30
 
       - name: OWASP ZAP Scan
-        uses: zaproxy/action-baseline@8a1bff313f4d183dba5aa154ecbe89ad751c9153 # v0.14.0
+        uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.14.0
         with:
           target: 'http://localhost:3000'
           rules_file_name: 'zap-rules.tsv'

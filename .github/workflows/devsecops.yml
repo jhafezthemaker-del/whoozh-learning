@@ -12,7 +12,7 @@ env:
   ECS_SERVICE: whoozh-task-service-i1009apx
   ECS_CLUSTER: whoozh-cluster
   ECS_TASK_DEFINITION: whoozh-task # The family name of your task definition    
-  CONTAINER_NAME: whoozh-container
+  CONTAINER_NAME: whoozh
 jobs:
   # -------------------------------------------------------------
   # JOB 1: SECRET SCANNING (TruffleHog)

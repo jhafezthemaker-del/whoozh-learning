@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
-
+import { auth } from '@/auth'
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
@@ -31,15 +31,16 @@ export const metadata: Metadata = {
 import { Toaster } from '@/components/ui/sonner'
 import AuthSessionProvider from '@/components/session-provider'
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+   const session = await auth()
   return (
     <html lang="en">
       <body className="font-sans antialiased" suppressHydrationWarning>
-        <AuthSessionProvider>
+        <AuthSessionProvider session={session}>
           {children}
         </AuthSessionProvider>
         <Toaster />

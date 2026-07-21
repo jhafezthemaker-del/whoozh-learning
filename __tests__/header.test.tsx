@@ -1,8 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Header from '@/components/header'
-import { http, HttpResponse } from 'msw'
-import { server } from './mocks/server'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 
 // Mock next/navigation
@@ -20,6 +18,12 @@ vi.mock('@/app/actions/auth', () => ({
   logoutAction: vi.fn(),
 }))
 
+// Mock next-auth/react useSession
+const mockUseSession = vi.fn()
+vi.mock('next-auth/react', () => ({
+  useSession: () => mockUseSession(),
+}))
+
 import { logoutAction } from '@/app/actions/auth'
 
 describe('Header Integration Test', () => {
@@ -28,15 +32,10 @@ describe('Header Integration Test', () => {
   })
 
   it('should render Sign in and Sign up buttons when user is logged out (session is null)', async () => {
-    server.use(
-      http.get('/api/auth/session', () => {
-        return HttpResponse.json({ session: null })
-      })
-    )
+    mockUseSession.mockReturnValue({ data: null, status: 'unauthenticated' })
 
     render(<Header />)
 
-    // Wait for the UI state to update after fetch resolves
     await waitFor(() => {
       expect(screen.getByText('Sign in')).toBeInTheDocument()
       expect(screen.getByText('Sign up')).toBeInTheDocument()
@@ -46,22 +45,20 @@ describe('Header Integration Test', () => {
   })
 
   it('should render user profile info and logout button when user is logged in', async () => {
-    const mockSession = {
-      user_id: 'user-123',
-      email: 'john@example.com',
-      name: 'John Doe',
-      image: null,
-    }
-
-    server.use(
-      http.get('/api/auth/session', () => {
-        return HttpResponse.json({ session: mockSession })
-      })
-    )
+    mockUseSession.mockReturnValue({
+      data: {
+        user: {
+          user_id: 'user-123',
+          email: 'john@example.com',
+          name: 'John Doe',
+          image: null,
+        },
+      },
+      status: 'authenticated',
+    })
 
     render(<Header />)
 
-    // Wait for session data to load and display the user's name
     await waitFor(() => {
       expect(screen.getByText('John Doe')).toBeInTheDocument()
       expect(screen.getByText('john@example.com')).toBeInTheDocument()
@@ -73,24 +70,22 @@ describe('Header Integration Test', () => {
   })
 
   it('should call logoutAction and redirect to login page when logout is clicked', async () => {
-    const mockSession = {
-      user_id: 'user-123',
-      email: 'john@example.com',
-      name: 'John Doe',
-      image: null,
-    }
-
-    server.use(
-      http.get('/api/auth/session', () => {
-        return HttpResponse.json({ session: mockSession })
-      })
-    )
+    mockUseSession.mockReturnValue({
+      data: {
+        user: {
+          user_id: 'user-123',
+          email: 'john@example.com',
+          name: 'John Doe',
+          image: null,
+        },
+      },
+      status: 'authenticated',
+    })
 
     vi.mocked(logoutAction).mockResolvedValue()
 
     render(<Header />)
 
-    // Wait for the user profile to load
     await waitFor(() => {
       expect(screen.getByText('John Doe')).toBeInTheDocument()
     })

@@ -1,7 +1,7 @@
 export interface Category {
   id: string
   name: string
-  icon: string
+  icon: React.ReactNode
   description: string
   color: string
   topics: SubTopic[]
@@ -10,9 +10,9 @@ export interface Category {
 export interface SubTopic {
   id: string
   name: string
-  icon: string
   description: string
   courseCount: number
+  icon?: string
 }
 
 export const categories: Category[] = [
@@ -450,6 +450,24 @@ export const categories: Category[] = [
         description: 'Build reactive systems using event streams and messaging',
         courseCount: 8,
       },
+    ],
+  },
+  {
+    id: 'interview-practice',
+    name: 'Practice Interview',
+    icon: '🎙️',
+    description: 'Sharpen your skills with AI-powered mock interviews.',
+    color: 'from-cyan-500 to-blue-500',
+    topics: [
+      { id: 'software-developer', name: 'Software Developer Interview', description: 'Practice for a software developer role.', courseCount: 1 },
+      { id: 'web-app-security', name: 'Web Application Security Interview', description: 'Practice for a web application security role.', courseCount: 1 },
+      { id: 'software-architect', name: 'Software Architect Interview', description: 'Practice for a software architect role.', courseCount: 1 },
+      { id: 'devops', name: 'DevOps Interview', description: 'Practice for a DevOps role.', courseCount: 1 },
+      { id: 'devsecops', name: 'DevSecOps Interview', description: 'Practice for a DevSecOps role.', courseCount: 1 },
+      { id: 'data-scientist', name: 'Data Scientist Interview', description: 'Practice for a data scientist role.', courseCount: 1 },
+      { id: 'mobile-developer', name: 'Mobile Developer Interview', description: 'Practice for a mobile developer role.', courseCount: 1 },
+      { id: 'sre', name: 'Site Reliability Engineer Interview', description: 'Practice for an SRE role.', courseCount: 1 },
+      { id: 'qa-engineer', name: 'QA Engineer Interview', description: 'Practice for a QA engineer role.', courseCount: 1 },
     ],
   },
 ]

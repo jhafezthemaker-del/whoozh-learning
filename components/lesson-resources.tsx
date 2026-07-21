@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Resource, Quiz } from '@/lib/learning-materials'
-import { FileText, Play, X, ArrowLeft, Clock, ChevronDown, ExternalLink, Brain, Sparkles, Loader2, Plus, BookOpen, GraduationCap, Trash2, AlertTriangle } from 'lucide-react'
+import { FileText, Play, X, ArrowLeft, Clock, ChevronDown, ExternalLink, Brain, Sparkles, Loader2, Plus, BookOpen, GraduationCap, Trash2, AlertTriangle, Mic } from 'lucide-react'
+import InterviewSection from './interview-section'
 import { Button } from './ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import { AddResourceModal } from './add-resource-modal'
@@ -31,6 +32,7 @@ interface LessonResourcesProps {
   subjectId: string
   subjectName: string
   onResourceAdded: (resource: Resource) => void
+  isInterview?: boolean
 }
 
 const TOPICS = [
@@ -72,7 +74,7 @@ const isValidUrl = (urlString: string) => {
   }
 }
 
-export default function LessonResources({ resources, topicTitle, subjectId, subjectName, onResourceAdded }: LessonResourcesProps) {
+export default function LessonResources({ resources, topicTitle, subjectId, subjectName, onResourceAdded, isInterview }: LessonResourcesProps) {
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null)
   const [selectedTopicId, setSelectedTopicId] = useState(1)
   const [quizzes, setQuizzes] = useState<Quiz[]>([])
@@ -300,8 +302,17 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
               value="quizzes" 
               className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 gap-2"
             >
-              <GraduationCap className="w-4 h-4" />
-              Quizzes
+              {isInterview ? (
+                <>
+                  <Mic className="w-4 h-4" />
+                  Interview
+                </>
+              ) : (
+                <>
+                  <GraduationCap className="w-4 h-4" />
+                  Quizzes
+                </>
+              )}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -385,130 +396,138 @@ export default function LessonResources({ resources, topicTitle, subjectId, subj
 
         <TabsContent value="quizzes" className="flex-1 m-0 overflow-hidden min-h-0">
           <ScrollArea className="h-full">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 text-primary font-semibold">
-                    <Brain className="w-5 h-5" />
-                    <span>AI Assessments</span>
-                  </div>
-                  {selectedQuizIds.length > 0 && (
-                    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          variant="destructive" 
-                          size="sm" 
-                          className="gap-2 animate-in fade-in slide-in-from-left-2 duration-300"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Delete ({selectedQuizIds.length})
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="bg-background/95 backdrop-blur-xl border-border/50 shadow-2xl">
-                        <AlertDialogHeader>
-                          <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
-                            <AlertTriangle className="w-6 h-6 text-destructive" />
-                          </div>
-                          <AlertDialogTitle className="text-xl font-bold">Are you absolutely sure?</AlertDialogTitle>
-                          <AlertDialogDescription className="text-muted-foreground pt-2">
-                            This will permanently delete <span className="font-bold text-foreground underline decoration-destructive/30 underline-offset-4">{selectedQuizIds.length}</span> {selectedQuizIds.length === 1 ? 'quiz' : 'quizzes'} and all their associated attempts. This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter className="mt-6 gap-3">
-                          <AlertDialogCancel className="rounded-xl border-border/50 hover:bg-secondary transition-colors">Cancel</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={(e) => {
-                              e.preventDefault()
-                              handleBulkDeleteQuizzes()
-                            }}
-                            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl px-6 transition-all active:scale-95"
-                          >
-                            Delete {selectedQuizIds.length === 1 ? 'Quiz' : 'Quizzes'}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                </div>
-                <CreateQuizModal 
+            <div className="p-6 h-full">
+              {isInterview ? (
+                <InterviewSection 
                   topicTitle={topicTitle}
-                  resources={resources}
-                  onGenerate={handleGenerateQuiz}
-                  generating={generatingQuiz}
+                  subjectId={subjectId}
+                  subjectName={subjectName}
                 />
-              </div>
-
-              <div className="space-y-6">
-                {quizzes.length === 0 && !generatingQuiz ? (
-                  <div className="text-center py-12 bg-muted/30 rounded-2xl border border-dashed border-border">
-                    <Brain className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-20" />
-                    <h3 className="text-lg font-medium text-foreground">No quizzes yet</h3>
-                    <p className="text-sm text-muted-foreground mb-6">Generate an AI quiz to test your knowledge.</p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {quizzes.map((q, idx) => (
-                        <div key={q.id} className="relative group/quiz">
-                          <Button
-                            variant={activeQuizId === q.id ? "default" : "outline"}
-                            className={`w-full h-auto py-4 px-5 flex flex-col items-start gap-1 text-left relative overflow-hidden transition-all ${
-                              activeQuizId === q.id ? "ring-2 ring-primary ring-offset-2" : "hover:border-primary/50"
-                            } ${selectedQuizIds.includes(q.id) ? 'border-primary bg-primary/5' : ''}`}
-                            onClick={() => setActiveQuizId(activeQuizId === q.id ? null : q.id)}
-                          >
-                            <div className="flex-1 min-w-0 pr-6 pl-2">
-                              <span className="font-bold block truncate">
-                                {q.title || `Quiz ${quizzes.length - idx}`}
-                              </span>
-                              {q.description && (
-                                <span className="text-[10px] opacity-70 line-clamp-1 mt-0.5 italic">
-                                  {q.description}
-                                </span>
-                              )}
-                            </div>
-                            {activeQuizId === q.id && (
-                              <div className="absolute top-2 right-2">
-                                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                              </div>
-                            )}
-                          </Button>
-                          
-                          <div className="absolute top-2 left-2 z-20">
-                            <Checkbox 
-                              checked={selectedQuizIds.includes(q.id)}
-                              onCheckedChange={() => toggleQuizSelection(q.id)}
-                              className="w-5 h-5 border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                            />
-                          </div>
-
-
-                        </div>
-                      ))}
-                    </div>
-
-                    {activeQuizId && (
-                      <div className="mt-8 bg-muted/20 rounded-3xl px-4 sm:px-8 py-10 border border-border animate-in fade-in slide-in-from-top-4 duration-500">
-                        <div className="flex justify-between items-center mb-6">
-                          <h3 className="text-lg font-bold">Assessment View</h3>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => setActiveQuizId(null)}
-                            className="text-muted-foreground hover:text-foreground"
-                          >
-                            Close Assessment
-                          </Button>
-                        </div>
-                        {(() => {
-                          const activeQuiz = quizzes.find(q => q.id === activeQuizId);
-                          return activeQuiz ? <QuizSection key={activeQuizId} quiz={activeQuiz} /> : null;
-                        })()}
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2 text-primary font-semibold">
+                        <Brain className="w-5 h-5" />
+                        <span>AI Assessments</span>
                       </div>
+                      {selectedQuizIds.length > 0 && (
+                        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              variant="destructive" 
+                              size="sm" 
+                              className="gap-2 animate-in fade-in slide-in-from-left-2 duration-300"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Delete ({selectedQuizIds.length})
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="bg-background/95 backdrop-blur-xl border-border/50 shadow-2xl">
+                            <AlertDialogHeader>
+                              <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+                                <AlertTriangle className="w-6 h-6 text-destructive" />
+                              </div>
+                              <AlertDialogTitle className="text-xl font-bold">Are you absolutely sure?</AlertDialogTitle>
+                              <AlertDialogDescription className="text-muted-foreground pt-2">
+                                This will permanently delete <span className="font-bold text-foreground underline decoration-destructive/30 underline-offset-4">{selectedQuizIds.length}</span> {selectedQuizIds.length === 1 ? 'quiz' : 'quizzes'} and all their associated attempts. This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter className="mt-6 gap-3">
+                              <AlertDialogCancel className="rounded-xl border-border/50 hover:bg-secondary transition-colors">Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  handleBulkDeleteQuizzes()
+                                }}
+                                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl px-6 transition-all active:scale-95"
+                              >
+                                Delete {selectedQuizIds.length === 1 ? 'Quiz' : 'Quizzes'}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </div>
+                    <CreateQuizModal 
+                      topicTitle={topicTitle}
+                      resources={resources}
+                      onGenerate={handleGenerateQuiz}
+                      generating={generatingQuiz}
+                    />
+                  </div>
+
+                  <div className="space-y-6">
+                    {quizzes.length === 0 && !generatingQuiz ? (
+                      <div className="text-center py-12 bg-muted/30 rounded-2xl border border-dashed border-border">
+                        <Brain className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-20" />
+                        <h3 className="text-lg font-medium text-foreground">No quizzes yet</h3>
+                        <p className="text-sm text-muted-foreground mb-6">Generate an AI quiz to test your knowledge.</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {quizzes.map((q, idx) => (
+                            <div key={q.id} className="relative group/quiz">
+                              <Button
+                                variant={activeQuizId === q.id ? "default" : "outline"}
+                                className={`w-full h-auto py-4 px-5 flex flex-col items-start gap-1 text-left relative overflow-hidden transition-all ${
+                                  activeQuizId === q.id ? "ring-2 ring-primary ring-offset-2" : "hover:border-primary/50"
+                                } ${selectedQuizIds.includes(q.id) ? 'border-primary bg-primary/5' : ''}`}
+                                onClick={() => setActiveQuizId(activeQuizId === q.id ? null : q.id)}
+                              >
+                                <div className="flex-1 min-w-0 pr-6 pl-2">
+                                  <span className="font-bold block truncate">
+                                    {q.title || `Quiz ${quizzes.length - idx}`}
+                                  </span>
+                                  {q.description && (
+                                    <span className="text-[10px] opacity-70 line-clamp-1 mt-0.5 italic">
+                                      {q.description}
+                                    </span>
+                                  )}
+                                </div>
+                                {activeQuizId === q.id && (
+                                  <div className="absolute top-2 right-2">
+                                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                                  </div>
+                                )}
+                              </Button>
+                              
+                              <div className="absolute top-2 left-2 z-20">
+                                <Checkbox 
+                                  checked={selectedQuizIds.includes(q.id)}
+                                  onCheckedChange={() => toggleQuizSelection(q.id)}
+                                  className="w-5 h-5 border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {activeQuizId && (
+                          <div className="mt-8 bg-muted/20 rounded-3xl px-4 sm:px-8 py-10 border border-border animate-in fade-in slide-in-from-top-4 duration-500">
+                            <div className="flex justify-between items-center mb-6">
+                              <h3 className="text-lg font-bold">Assessment View</h3>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => setActiveQuizId(null)}
+                                className="text-muted-foreground hover:text-foreground"
+                              >
+                                Close Assessment
+                              </Button>
+                            </div>
+                            {(() => {
+                              const activeQuiz = quizzes.find(q => q.id === activeQuizId);
+                              return activeQuiz ? <QuizSection key={activeQuizId} quiz={activeQuiz} /> : null;
+                            })()}
+                          </div>
+                        )}
+                      </>
                     )}
-                  </>
-                )}
-              </div>
+                  </div>
+                </>
+              )}
             </div>
           </ScrollArea>
         </TabsContent>

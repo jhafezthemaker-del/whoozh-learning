@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import Header from '@/components/header'
 import CategoryCard from '@/components/category-card'
 import SubtopicCard from '@/components/subtopic-card'
-import { categories } from '@/lib/categories'
 import { ArrowLeft, BookMarked } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import Header from '@/components/header'
+import { categories } from '@/lib/categories'
 
 export default function Home() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)

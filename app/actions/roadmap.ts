@@ -23,7 +23,7 @@ const RoadmapSchema = z.object({
 
 export type RoadmapData = z.infer<typeof RoadmapSchema>
 
-export async function generateRoadmapAction(subjectName: string) {
+export async function generateRoadmapAction(subjectName: string, isInterview: boolean = false) {
   const session = await auth()
   if (!session?.user?.user_id) {
     throw new Error('Not authenticated')
@@ -37,14 +37,22 @@ export async function generateRoadmapAction(subjectName: string) {
   })
 
   try {
-    const { output } = await generateText({
-      model: google('gemini-3.5-flash'),
-      output: Output.object({ schema: RoadmapSchema }),
-      prompt: `Create a 4-week learning roadmap for the subject: ${subjectName}.
+    const prompt = isInterview
+      ? `Create a 4-week interview preparation roadmap for the role: ${subjectName}.
+      The roadmap should start from today, which is ${dateString}.
+      Format the roadmap in weeks and days. 
+      Each day should have 2-3 topics/sessions with specific times (e.g., 9:00am, 2:00pm) focusing on key interview topics, practice questions, mock interviews, and behavioral/technical preparation.
+      Ensure the topics are logical and progress from fundamental concepts to advanced mock interviews.`
+      : `Create a 4-week learning roadmap for the subject: ${subjectName}.
       The roadmap should start from today, which is ${dateString}.
       Format the roadmap in weeks and days. 
       Each day should have 2-3 topics/sessions with specific times (e.g., 9:00am, 2:00pm).
-      Ensure the topics are logical and progress from beginner to advanced.`,
+      Ensure the topics are logical and progress from beginner to advanced.`
+
+    const { output } = await generateText({
+      model: google('gemini-3.5-flash'),
+      output: Output.object({ schema: RoadmapSchema }),
+      prompt,
     })
 
     return { success: true, roadmap: output }

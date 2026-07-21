@@ -8,6 +8,7 @@ import NoteBlock from '@/components/note-block'
 import { createBlock, Block } from '@/lib/blocks'
 import { Plus, Loader2 } from 'lucide-react'
 import { getOrGenerateSourcesAction, getOrGenerateResourcesAction } from '@/app/actions/learning-materials'
+import { categories } from '@/lib/categories'
 
 interface ClientPageProps {
   subjectId: string
@@ -23,6 +24,8 @@ export default function LearningLabClientPage({
   roadmap
 }: ClientPageProps) {
   const [currentTopic, setCurrentTopic] = useState(initialTopic)
+  const isInterview = subjectId === 'interview-practice' || 
+    categories.find(c => c.id === 'interview-practice')?.topics.some(t => t.id === subjectId)
   const [selectedSourceId, setSelectedSourceId] = useState<string>('')
   const [blocks, setBlocks] = useState<Block[]>([
     createBlock('text', 'Click here to start taking notes...', 'initial-block'),
@@ -157,6 +160,7 @@ export default function LearningLabClientPage({
                   subjectId={subjectId}
                   subjectName={subjectName}
                   onResourceAdded={(newResource) => setResources(prev => [...prev, newResource])}
+                  isInterview={isInterview}
                 />
               )}
             </div>

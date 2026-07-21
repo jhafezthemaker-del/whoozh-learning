@@ -39,7 +39,7 @@ export default function TopicPage() {
   const handleGenerateRoadmap = async () => {
     if (!subtopic) return
     setIsGenerating(true)
-    const result = await generateRoadmapAction(subtopic.name)
+    const result = await generateRoadmapAction(subtopic.name, topicId === 'interview-practice')
     setIsGenerating(false)
 
     if (result.success && result.roadmap) {

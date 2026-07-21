@@ -5,9 +5,8 @@ import {prisma} from '@/lib/prisma'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcryptjs from 'bcryptjs'
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   ...authConfig,
-  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -25,7 +24,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: credentials.email as string
           }
         })
-        console.log(user)
+
         if (!user || !user.password) {
           return null
         }
@@ -36,8 +35,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         )
 
         if (passwordsMatch) {
-          
-          return user
+          return {
+            ...user,
+            id: user.user_id,
+          }
         }
 
         return null
@@ -46,14 +47,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     ...authConfig.callbacks,
-    async session({ session, token }) {
-      console.log('Session callback (auth.ts) - token.user_id:', token?.user_id)
-      if (token && session.user) {
-        (session.user as any).user_id = token.user_id as string
-        session.user.image = token.image as string
-        console.log('Session callback (auth.ts) - setting session.user.user_id to:', (session.user as any).user_id)
-      }
-      return session
-    },
   }
 })

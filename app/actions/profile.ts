@@ -1,6 +1,6 @@
 'use server'
 
-import { auth } from '@/auth'
+import { auth, unstable_update } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import fs from 'fs/promises'
@@ -57,10 +57,14 @@ export async function updateProfileAction(formData: FormData) {
       },
     })
 
+    // Update the JWT session cookie server-side so the client sees the
+    // new name and image immediately without requiring a re-login.
+    await unstable_update({ user: { name, image: imageUrl } })
+
     revalidatePath('/profile')
     revalidatePath('/') // Revalidate home/header as well
     
-    return { success: true, message: 'Profile updated successfully' }
+    return { success: true, message: 'Profile updated successfully', name, image: imageUrl }
   } catch (error) {
     console.error('Error updating profile:', error)
     return { success: false, message: 'Failed to update profile' }

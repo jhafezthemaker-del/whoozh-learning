@@ -21,6 +21,7 @@ model User {
   learning      Learning[]
   roadmaps      Roadmap[]
   quiz_attempts QuizAttempt[]
+  interviews    Interview[]
 
   @@map("users")
 }
@@ -204,4 +205,18 @@ model QuizAttempt {
   user User @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@map("quiz_attempts")
+}
+
+model Interview {
+  id           String   @id @default(uuid())
+  user_id      String
+  subject_id   String
+  topic_name   String
+  title        String
+  audio_url    String
+  created_at   DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("interviews")
 }

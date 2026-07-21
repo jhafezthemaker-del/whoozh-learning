@@ -2,7 +2,8 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import Header from '@/components/header'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button' 
+import { ArrowLeft } from 'lucide-react'
 import { RoadmapData } from '@/app/actions/roadmap'
 import RoadmapEditor from '@/components/roadmap-editor'
 
@@ -27,7 +28,17 @@ export default async function LearningPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-16">
+      <main className="container mx-auto px-4 py-8 sm:py-16">
+        <div className="max-w-4xl mx-auto mb-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 text-muted-foreground hover:text-foreground"
+            asChild
+          >
+            <a href="/"><ArrowLeft className="w-4 h-4" />Back to Subjects</a>
+          </Button>
+        </div>
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-16">

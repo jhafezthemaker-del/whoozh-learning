@@ -2,6 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Button } from './ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import { 
   Mic, 
   MicOff, 
@@ -16,7 +23,11 @@ import {
   ChevronRight,
   AlertCircle,
   Keyboard,
-  ShieldAlert
+  ShieldAlert,
+  Download,
+  FileAudio,
+  Search,
+  Calendar
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -37,6 +48,8 @@ interface InterviewRecord {
   title: string
   audio_url: string
   created_at: Date
+  topic_name?: string
+  subject_id?: string
 }
 
 type MicStatus = 'unknown' | 'granted' | 'denied' | 'unavailable'
@@ -60,7 +73,9 @@ function getSupportedMimeType(): string {
 
 export default function InterviewSection({ topicTitle, subjectId, subjectName }: InterviewSectionProps) {
   const [interviews, setInterviews] = useState<InterviewRecord[]>([])
+  const [allInterviews, setAllInterviews] = useState<InterviewRecord[]>([])
   const [loadingList, setLoadingList] = useState(true)
+  const [loadingAllList, setLoadingAllList] = useState(false)
 
   // Interview flow states
   const [mode, setMode] = useState<'dashboard' | 'active'>('dashboard')
@@ -76,15 +91,19 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
   const [isRecording, setIsRecording] = useState(false)
   const [transcription, setTranscription] = useState('')
   const [textAnswer, setTextAnswer] = useState('')
-  // textOnly = true when mic is denied — user types their answers
   const [textOnly, setTextOnly] = useState(false)
+
+  // Modal / Search state for Recorded Interviews
+  const [isRecordModalOpen, setIsRecordModalOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterScope, setFilterScope] = useState<'topic' | 'all'>('topic')
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const recognitionRef = useRef<any>(null)
   const streamRef = useRef<MediaStream | null>(null)
 
-  // ── Load past interviews ──────────────────────────────────────────────────
+  // ── Load past interviews for current topic ─────────────────────────────────
   const loadInterviews = async () => {
     setLoadingList(true)
     try {
@@ -98,6 +117,19 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
     }
   }
 
+  // ── Load ALL recorded interviews for user ─────────────────────────────────
+  const loadAllInterviews = async () => {
+    setLoadingAllList(true)
+    try {
+      const data = await getInterviewsAction()
+      setAllInterviews(data as unknown as InterviewRecord[])
+    } catch (e) {
+      console.error('Failed to load all interviews:', e)
+    } finally {
+      setLoadingAllList(false)
+    }
+  }
+
   useEffect(() => {
     loadInterviews()
   }, [subjectId, topicTitle])
@@ -105,16 +137,15 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
   // ── Check mic permission on mount ────────────────────────────────────────
   useEffect(() => {
     if (typeof navigator === 'undefined') return
-    if (!navigator.mediaDevices?.getUserMedia) {
+    if (!Boolean(navigator.mediaDevices?.getUserMedia)) {
       setMicStatus('unavailable')
       return
     }
-    // Use the Permissions API if available (doesn't prompt the user)
     if (navigator.permissions?.query) {
       navigator.permissions.query({ name: 'microphone' as PermissionName }).then((result) => {
         if (result.state === 'granted') setMicStatus('granted')
         else if (result.state === 'denied') setMicStatus('denied')
-        else setMicStatus('unknown') // 'prompt' — we'll ask when they start
+        else setMicStatus('unknown')
         result.onchange = () => {
           if (result.state === 'granted') setMicStatus('granted')
           else if (result.state === 'denied') setMicStatus('denied')
@@ -123,52 +154,7 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
     }
   }, [])
 
-  // ── Initialize Speech Recognition ────────────────────────────────────────
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    if (!SpeechRecognition) return
-
-    const rec = new SpeechRecognition()
-    rec.continuous = true
-    rec.interimResults = true
-    rec.lang = 'en-US'
-
-    rec.onresult = (event: any) => {
-      let interim = ''
-      let final = ''
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) final += event.results[i][0].transcript
-        else interim += event.results[i][0].transcript
-      }
-      const text = final || interim
-      if (text) {
-        setTranscription(text)
-        setTextAnswer(prev => prev ? prev + ' ' + text : text)
-      }
-    }
-
-    rec.onerror = (event: any) => {
-      // Swallow 'no-speech' errors — they are benign
-      if (event.error !== 'no-speech') {
-        console.error('Speech recognition error:', event.error)
-      }
-    }
-
-    recognitionRef.current = rec
-  }, [])
-
-  // ── Text-To-Speech ───────────────────────────────────────────────────────
-  const speakQuestion = (text: string) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return
-    window.speechSynthesis.cancel()
-    const utterance = new SpeechSynthesisUtterance(text)
-    utterance.rate = 0.95
-    utterance.pitch = 1.05
-    window.speechSynthesis.speak(utterance)
-  }
-
-  // ── Request mic & create recorder ────────────────────────────────────────
+  // ── Request mic stream ───────────────────────────────────────────────────
   const requestMicAndRecord = async (): Promise<MediaRecorder | null> => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -176,129 +162,142 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
       setMicStatus('granted')
 
       const mimeType = getSupportedMimeType()
-      const recorderOptions = mimeType ? { mimeType } : {}
-      const recorder = new MediaRecorder(stream, recorderOptions)
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream)
 
-      recorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          audioChunksRef.current.push(event.data)
-        }
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data)
       }
-
       return recorder
     } catch (err: any) {
-      const isDenied =
-        err?.name === 'NotAllowedError' ||
-        err?.name === 'PermissionDeniedError' ||
-        err?.message?.toLowerCase().includes('permission')
-
-      if (isDenied) {
+      console.warn('Microphone error:', err)
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
         setMicStatus('denied')
+        toast.error('Microphone access blocked by browser policy.')
       } else {
-        console.error('Mic error:', err)
+        setMicStatus('unavailable')
+        toast.error('Could not start microphone.')
       }
       return null
     }
   }
 
-  // ── Start Interview ───────────────────────────────────────────────────────
+  // ── Start Mock Interview ─────────────────────────────────────────────────
   const startInterview = async () => {
     setQuestions([])
-    setHistory([])
     setCurrentQuestionIndex(0)
+    setHistory([])
     setTranscription('')
     setTextAnswer('')
     audioChunksRef.current = []
     setStep('interviewing')
     setGeneratingQuestion(true)
 
-    // Try to get mic access (non-blocking — fall back to text-only)
-    if (!textOnly && navigator.mediaDevices?.getUserMedia) {
+    if (!textOnly && Boolean(navigator.mediaDevices?.getUserMedia)) {
       const recorder = await requestMicAndRecord()
       if (recorder) {
         mediaRecorderRef.current = recorder
         setTextOnly(false)
       } else {
-        // Mic denied — switch to text-only mode silently
         setTextOnly(true)
-        mediaRecorderRef.current = null
-        toast('🎙️ No microphone access — switching to text-only mode.', {
-          description: 'You can still type your answers. The interview will not be recorded as audio.',
-          duration: 5000,
-        })
       }
     } else {
       setTextOnly(true)
-      mediaRecorderRef.current = null
     }
 
-    // Generate first question (always works, regardless of mic)
     try {
       const firstQuestion = await generateInterviewQuestionAction(topicTitle, [])
       setQuestions([firstQuestion])
       setGeneratingQuestion(false)
       speakQuestion(firstQuestion)
     } catch (e) {
-      console.error('Failed to generate question:', e)
+      console.error('Failed to start interview:', e)
       setGeneratingQuestion(false)
-      toast.error('Failed to generate question. Please try again.')
+      toast.error('Failed to generate initial interview question.')
     }
   }
 
-  // ── Recording controls ───────────────────────────────────────────────────
-  const handleStartRecording = () => {
-    if (!mediaRecorderRef.current) return
-    setTranscription('')
-
-    try {
-      if (mediaRecorderRef.current.state === 'inactive') {
-        mediaRecorderRef.current.start(1000)
-      } else if (mediaRecorderRef.current.state === 'paused') {
-        mediaRecorderRef.current.resume()
-      }
-      if (recognitionRef.current) {
-        try { recognitionRef.current.start() } catch (_) { /* already started */ }
-      }
-      setIsRecording(true)
-    } catch (e) {
-      console.error('Failed to start recording:', e)
-      toast.error('Could not start recording.')
-    }
+  // ── Read question aloud via speech synthesis ─────────────────────────────
+  const speakQuestion = (text: string) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.rate = 0.95
+    utterance.pitch = 1.0
+    window.speechSynthesis.speak(utterance)
   }
 
-  const handleStopRecording = () => {
-    if (!mediaRecorderRef.current) return
-    try {
-      if (mediaRecorderRef.current.state === 'recording') {
+  // ── Toggle Speech Recognition ────────────────────────────────────────────
+  const toggleRecording = () => {
+    if (textOnly) return
+
+    if (isRecording) {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
         mediaRecorderRef.current.pause()
       }
       if (recognitionRef.current) {
         try { recognitionRef.current.stop() } catch (_) { /* ignore */ }
       }
       setIsRecording(false)
-    } catch (e) {
-      console.error('Failed to stop recording:', e)
+    } else {
+      audioChunksRef.current = []
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'recording') {
+        try {
+          mediaRecorderRef.current.start(250)
+        } catch (_) {
+          /* ignore state errors */
+        }
+      }
+
+      const SpeechRecognition =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition()
+        recognition.continuous = true
+        recognition.interimResults = true
+        recognition.lang = 'en-US'
+
+        recognition.onresult = (event: any) => {
+          let currentTranscription = ''
+          for (let i = 0; i < event.results.length; i++) {
+            currentTranscription += event.results[i][0].transcript
+          }
+          setTranscription(currentTranscription)
+          setTextAnswer(currentTranscription)
+        }
+
+        recognition.onerror = (e: any) => {
+          console.warn('Speech recognition error:', e.error)
+        }
+
+        recognition.start()
+        recognitionRef.current = recognition
+      }
+      setIsRecording(true)
     }
   }
 
-  // ── Submit Answer ────────────────────────────────────────────────────────
+  // ── Submit Answer & Advance ──────────────────────────────────────────────
   const handleSubmitAnswer = async () => {
-    if (isRecording) handleStopRecording()
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel()
+    }
+    if (isRecording) {
+      toggleRecording()
+    }
 
-    const answer = textAnswer.trim() || '(No answer provided)'
-    const question = questions[currentQuestionIndex]
+    const currentQuestion = questions[currentQuestionIndex]
+    const answerToUse = textAnswer.trim() || transcription.trim() || '(No response provided)'
 
     const updatedHistory = [
       ...history,
-      { role: 'assistant' as const, content: question },
-      { role: 'user' as const, content: answer },
+      { role: 'assistant' as const, content: currentQuestion },
+      { role: 'user' as const, content: answerToUse },
     ]
     setHistory(updatedHistory)
 
     const nextIndex = currentQuestionIndex + 1
 
     if (nextIndex >= 3) {
-      // ── End of interview ──
       setStep('saving')
 
       const saveInterview = async (audioBlob?: Blob) => {
@@ -319,11 +318,11 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
           if (result.success) {
             toast.success('Mock Interview saved successfully!')
             loadInterviews()
+            loadAllInterviews()
           } else {
             toast.error(result.message || 'Failed to save mock interview audio')
           }
         } else {
-          // text-only — no audio to save, just mark complete
           toast.success('Interview completed! (Text-only — no audio saved)')
         }
         setStep('complete')
@@ -340,7 +339,6 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
         await saveInterview()
       }
     } else {
-      // ── Next question ──
       setCurrentQuestionIndex(nextIndex)
       setTranscription('')
       setTextAnswer('')
@@ -366,6 +364,7 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
       if (result.success) {
         toast.success('Interview deleted')
         setInterviews(prev => prev.filter(item => item.id !== id))
+        setAllInterviews(prev => prev.filter(item => item.id !== id))
       } else {
         toast.error(result.message || 'Failed to delete interview')
       }
@@ -395,6 +394,14 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
     setTextOnly(false)
   }
 
+  // Filter list for modal
+  const rawList = filterScope === 'topic' ? interviews : allInterviews
+  const displayList = rawList.filter(item => 
+    searchQuery === '' || 
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (item.topic_name && item.topic_name.toLowerCase().includes(searchQuery.toLowerCase()))
+  )
+
   // ═══════════════════════════════════════════════════════════════════════════
   // RENDER — Active Interview Mode
   // ═══════════════════════════════════════════════════════════════════════════
@@ -410,9 +417,28 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">{topicTitle}</p>
           </div>
-          <Button variant="ghost" size="sm" onClick={quitInterview} className="text-destructive hover:bg-destructive/10">
-            Quit
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setIsRecordModalOpen(true)
+                loadAllInterviews()
+              }}
+              className="gap-1.5 font-semibold text-xs border-primary/30 hover:border-primary"
+            >
+              <FileAudio className="w-3.5 h-3.5 text-primary" />
+              <span>Recorded Interviews</span>
+              {interviews.length > 0 && (
+                <span className="bg-primary/20 text-primary px-1.5 py-0.2 rounded-full text-[10px] font-bold">
+                  {interviews.length}
+                </span>
+              )}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={quitInterview} className="text-destructive hover:bg-destructive/10">
+              Quit
+            </Button>
+          </div>
         </div>
 
         {/* ── Intro Step ── */}
@@ -518,76 +544,36 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
               )}
             </div>
 
-            {/* Answer Input */}
-            <div className="flex-1 flex flex-col my-4 gap-3 min-h-0">
-              {/* Voice recording area — only when mic is available */}
+            {/* Response Section */}
+            <div className="my-4 flex-1 flex flex-col min-h-0 gap-3">
               {!textOnly && (
-                <div className="flex flex-col items-center justify-center py-3 bg-secondary/15 rounded-2xl border border-dashed border-border/60 px-4 flex-shrink-0">
-                  {isRecording ? (
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="relative">
-                        <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
-                        <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center relative">
-                          <Mic className="w-5 h-5 text-white" />
-                        </div>
-                      </div>
-                      <span className="text-xs font-bold text-red-500 animate-pulse">RECORDING…</span>
-                      {transcription && (
-                        <p className="text-xs text-muted-foreground italic text-center max-w-md line-clamp-2">
-                          &ldquo;{transcription}&rdquo;
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="w-10 h-10 bg-secondary/80 rounded-full flex items-center justify-center">
-                        <MicOff className="w-5 h-5 text-muted-foreground" />
-                      </div>
-                      <span className="text-xs text-muted-foreground">Voice paused</span>
-                    </div>
-                  )}
-
-                  <div className="flex gap-3 mt-3">
-                    {!isRecording ? (
-                      <Button
-                        onClick={handleStartRecording}
-                        disabled={generatingQuestion}
-                        size="sm"
-                        className="bg-primary hover:bg-primary/95 text-primary-foreground gap-2 font-bold"
-                      >
-                        <Mic className="w-4 h-4" />
-                        Start Recording
-                      </Button>
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={toggleRecording}
+                    disabled={generatingQuestion}
+                    variant={isRecording ? 'destructive' : 'default'}
+                    className={`font-bold gap-2 ${isRecording ? 'animate-pulse' : ''}`}
+                  >
+                    {isRecording ? (
+                      <>
+                        <Square className="w-4 h-4 fill-current" />
+                        Pause Recording
+                      </>
                     ) : (
-                      <Button
-                        onClick={handleStopRecording}
-                        variant="destructive"
-                        size="sm"
-                        className="gap-2 font-bold animate-pulse"
-                      >
-                        <Square className="w-4 h-4" />
-                        Pause
-                      </Button>
+                      <>
+                        <Mic className="w-4 h-4" />
+                        {transcription ? 'Resume Voice Answer' : 'Record Voice Answer'}
+                      </>
                     )}
-                  </div>
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    {isRecording ? 'Listening & transcribing…' : 'Click to record or type below.'}
+                  </span>
                 </div>
               )}
 
-              {/* Text-only banner */}
-              {textOnly && (
-                <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl flex-shrink-0">
-                  <Keyboard className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                  <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                    Text-only mode — type your answer below.
-                  </p>
-                </div>
-              )}
-
-              {/* Answer textarea */}
-              <div className="flex flex-col gap-1 flex-1 min-h-0">
-                <label className="text-xs font-bold text-muted-foreground">
-                  {textOnly ? 'Type Your Answer' : 'Answer Transcript / Edit'}
-                </label>
+              {/* Text Area */}
+              <div className="flex-1 flex flex-col min-h-0">
                 <textarea
                   value={textAnswer}
                   onChange={(e) => setTextAnswer(e.target.value)}
@@ -632,7 +618,7 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
         {/* ── Complete Step ── */}
         {step === 'complete' && (
           <div className="flex-1 flex flex-col items-center justify-center gap-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/15 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
               <Sparkles className="w-8 h-8 text-emerald-500" />
             </div>
             <div>
@@ -642,14 +628,158 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
                 {!textOnly && ' Your audio response has been saved.'}
               </p>
             </div>
-            <Button
-              onClick={() => { setMode('dashboard'); setStep('intro'); setTextOnly(false) }}
-              className="px-8 font-bold"
-            >
-              View Completed Interviews
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  setIsRecordModalOpen(true)
+                  loadAllInterviews()
+                }}
+                variant="outline"
+                className="px-6 font-bold gap-2 border-primary/30"
+              >
+                <FileAudio className="w-4 h-4 text-primary" />
+                Show Recorded List
+              </Button>
+              <Button
+                onClick={() => { setMode('dashboard'); setStep('intro'); setTextOnly(false) }}
+                className="px-8 font-bold"
+              >
+                Back to Dashboard
+              </Button>
+            </div>
           </div>
         )}
+
+        {/* ── Dialog / Modal for Recorded Interviews ── */}
+        <Dialog open={isRecordModalOpen} onOpenChange={setIsRecordModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-6 overflow-hidden">
+            <DialogHeader className="pb-2 border-b border-border/50">
+              <div className="flex items-center justify-between">
+                <DialogTitle className="text-xl font-extrabold flex items-center gap-2">
+                  <FileAudio className="w-5 h-5 text-primary" />
+                  Recorded Mock Interviews
+                </DialogTitle>
+              </div>
+              <DialogDescription className="text-xs text-muted-foreground mt-1">
+                Listen to your saved voice recordings and review past practice sessions.
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Filter & Search Bar */}
+            <div className="flex flex-col sm:flex-row gap-3 py-3 border-b border-border/40">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search recordings..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-secondary/30 border border-border rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </div>
+              <div className="flex gap-1.5 bg-secondary/40 p-1 rounded-xl border border-border/40 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setFilterScope('topic')}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
+                    filterScope === 'topic'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  This Topic ({interviews.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterScope('all')
+                    loadAllInterviews()
+                  }}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
+                    filterScope === 'all'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  All Recordings ({allInterviews.length})
+                </button>
+              </div>
+            </div>
+
+            {/* Recorded Interviews List */}
+            <div className="flex-1 overflow-y-auto py-3 space-y-3 min-h-0 pr-1">
+              {loadingAllList && filterScope === 'all' ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-2">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  <p className="text-xs text-muted-foreground">Loading all recorded interviews…</p>
+                </div>
+              ) : displayList.length === 0 ? (
+                <div className="text-center py-12 bg-secondary/10 rounded-xl border border-dashed border-border/50">
+                  <FileAudio className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+                  <p className="font-semibold text-foreground text-sm">No recorded interviews found</p>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
+                    {searchQuery
+                      ? 'No recording matches your search filter.'
+                      : 'Take an AI practice interview with audio recording enabled to build your history.'}
+                  </p>
+                </div>
+              ) : (
+                displayList.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-card border border-border/60 hover:border-primary/40 rounded-xl p-4 transition-all shadow-xs flex flex-col gap-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h4 className="font-bold text-foreground text-sm">{item.title}</h4>
+                        <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3 text-primary/70" />
+                            {new Date(item.created_at).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                          {item.topic_name && (
+                            <span className="bg-secondary px-2 py-0.5 rounded-full text-[10px] font-medium text-foreground">
+                              {item.topic_name}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <a
+                          href={item.audio_url}
+                          download
+                          title="Download Audio"
+                          className="p-1.5 text-muted-foreground hover:text-primary hover:bg-secondary rounded-lg transition-colors"
+                        >
+                          <Download className="w-4 h-4" />
+                        </a>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                          onClick={() => handleDelete(item.id)}
+                          title="Delete Recording"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="bg-secondary/20 p-2 rounded-lg border border-border/40">
+                      <audio src={item.audio_url} controls className="w-full h-8 rounded" />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     )
   }
@@ -665,13 +795,31 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
           <History className="w-5 h-5 text-primary" />
           <span className="font-bold text-foreground text-lg">Completed Mock Interviews</span>
         </div>
-        <Button
-          onClick={() => { setMode('active'); setStep('intro') }}
-          className="bg-primary hover:bg-primary/95 text-primary-foreground font-extrabold gap-2 shadow-lg shadow-primary/10 transition-transform hover:scale-105 active:scale-95"
-        >
-          <Plus className="w-4 h-4" />
-          Start New AI Interview
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setIsRecordModalOpen(true)
+              loadAllInterviews()
+            }}
+            className="gap-2 font-bold text-sm border-primary/30 hover:border-primary"
+          >
+            <FileAudio className="w-4 h-4 text-primary" />
+            <span>Show Recorded Interviews</span>
+            {interviews.length > 0 && (
+              <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs font-bold">
+                {interviews.length}
+              </span>
+            )}
+          </Button>
+          <Button
+            onClick={() => { setMode('active'); setStep('intro') }}
+            className="bg-primary hover:bg-primary/95 text-primary-foreground font-extrabold gap-2 shadow-lg shadow-primary/10 transition-transform hover:scale-105 active:scale-95"
+          >
+            <Plus className="w-4 h-4" />
+            Start New AI Interview
+          </Button>
+        </div>
       </div>
 
       {/* Interview List */}
@@ -690,13 +838,14 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
                 <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
                   Take your first AI-powered mock interview to practice speaking and review your answers.
                 </p>
-                <Button
-                  onClick={() => { setMode('active'); setStep('intro') }}
-                  className="mt-6 font-bold"
-                  variant="outline"
-                >
-                  Start Practice Interview
-                </Button>
+                <div className="mt-6 flex justify-center gap-3">
+                  <Button
+                    onClick={() => { setMode('active'); setStep('intro') }}
+                    className="font-bold"
+                  >
+                    Start Practice Interview
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
@@ -720,14 +869,25 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
                           })}
                         </span>
                       </div>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
-                        onClick={() => handleDelete(item.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <a
+                          href={item.audio_url}
+                          download
+                          title="Download Audio"
+                          className="p-1.5 text-muted-foreground hover:text-primary hover:bg-secondary rounded-full transition-colors"
+                        >
+                          <Download className="w-4 h-4" />
+                        </a>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
+                          onClick={() => handleDelete(item.id)}
+                          title="Delete Interview"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
 
                     <div className="mt-3">
@@ -740,6 +900,137 @@ export default function InterviewSection({ topicTitle, subjectId, subjectName }:
           </>
         )}
       </div>
+
+      {/* ── Dialog / Modal for Recorded Interviews ── */}
+      <Dialog open={isRecordModalOpen} onOpenChange={setIsRecordModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-6 overflow-hidden">
+          <DialogHeader className="pb-2 border-b border-border/50">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-xl font-extrabold flex items-center gap-2">
+                <FileAudio className="w-5 h-5 text-primary" />
+                Recorded Mock Interviews
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground mt-1">
+              Listen to your saved voice recordings and review past practice sessions.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Filter & Search Bar */}
+          <div className="flex flex-col sm:flex-row gap-3 py-3 border-b border-border/40">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search recordings..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-secondary/30 border border-border rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+            <div className="flex gap-1.5 bg-secondary/40 p-1 rounded-xl border border-border/40 text-xs">
+              <button
+                type="button"
+                onClick={() => setFilterScope('topic')}
+                className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
+                  filterScope === 'topic'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                This Topic ({interviews.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterScope('all')
+                  loadAllInterviews()
+                }}
+                className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
+                  filterScope === 'all'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                All Recordings ({allInterviews.length})
+              </button>
+            </div>
+          </div>
+
+          {/* Recorded Interviews List */}
+          <div className="flex-1 overflow-y-auto py-3 space-y-3 min-h-0 pr-1">
+            {loadingAllList && filterScope === 'all' ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-2">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <p className="text-xs text-muted-foreground">Loading all recorded interviews…</p>
+              </div>
+            ) : displayList.length === 0 ? (
+              <div className="text-center py-12 bg-secondary/10 rounded-xl border border-dashed border-border/50">
+                <FileAudio className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+                <p className="font-semibold text-foreground text-sm">No recorded interviews found</p>
+                <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
+                  {searchQuery
+                    ? 'No recording matches your search filter.'
+                    : 'Take an AI practice interview with audio recording enabled to build your history.'}
+                </p>
+              </div>
+            ) : (
+              displayList.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-card border border-border/60 hover:border-primary/40 rounded-xl p-4 transition-all shadow-xs flex flex-col gap-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h4 className="font-bold text-foreground text-sm">{item.title}</h4>
+                      <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-primary/70" />
+                          {new Date(item.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                        {item.topic_name && (
+                          <span className="bg-secondary px-2 py-0.5 rounded-full text-[10px] font-medium text-foreground">
+                            {item.topic_name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <a
+                        href={item.audio_url}
+                        download
+                        title="Download Audio"
+                        className="p-1.5 text-muted-foreground hover:text-primary hover:bg-secondary rounded-lg transition-colors"
+                      >
+                        <Download className="w-4 h-4" />
+                      </a>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                        onClick={() => handleDelete(item.id)}
+                        title="Delete Recording"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="bg-secondary/20 p-2 rounded-lg border border-border/40">
+                    <audio src={item.audio_url} controls className="w-full h-8 rounded" />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

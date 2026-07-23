@@ -7,18 +7,25 @@ import { auth } from '@/auth'
 import { promises as fs } from 'fs'
 import path from 'path'
 
-export async function getInterviewsAction(subjectId: string, topicName: string) {
+export async function getInterviewsAction(subjectId?: string, topicName?: string) {
   const session = await auth()
   if (!session?.user?.user_id) {
     throw new Error('Not authenticated')
   }
 
+  const where: Record<string, any> = {
+    user_id: session.user.user_id,
+  }
+
+  if (subjectId) {
+    where.subject_id = subjectId
+  }
+  if (topicName) {
+    where.topic_name = topicName
+  }
+
   return await prisma.interview.findMany({
-    where: {
-      user_id: session.user.user_id,
-      subject_id: subjectId,
-      topic_name: topicName,
-    },
+    where,
     orderBy: {
       created_at: 'desc',
     },
